@@ -147,7 +147,7 @@ onMounted(async () => {
 
       <el-alert
         v-if="!isSupabaseConfigured"
-        title="Supabase 未配置：请在 .env.local 填写 VITE_SUPABASE_URL 和 VITE_SUPABASE_PUBLISHABLE_KEY；若保存报 RLS 错误，请执行 supabase/fix-rls.sql"
+        title="Supabase 未配置：本地在 .env.local 填写；Vercel 部署请在 Project Settings → Environment Variables 添加 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY 后重新部署"
         type="error"
         show-icon
         :closable="false"

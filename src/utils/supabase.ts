@@ -1,11 +1,9 @@
 import {createClient, type SupabaseClient} from "@supabase/supabase-js"
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const supabaseAnonKey = (
-  import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-) as string | undefined
+const SUPABASE_URL = "https://cdvcpwcycwmjmepxzcmr.supabase.co"
+const SUPABASE_KEY = "sb_publishable_-BJe1Q08nE5bH210b9UxMA_gvzd1SZB"
 
-export const isSupabaseConfigured = Boolean(supabaseUrl?.trim() && supabaseAnonKey?.trim())
+export const isSupabaseConfigured = true
 
 function clearStaleSupabaseAuth(url: string) {
   try {
@@ -21,27 +19,16 @@ function clearStaleSupabaseAuth(url: string) {
   }
 }
 
-function createSupabaseClient(): SupabaseClient | null {
-  if (!isSupabaseConfigured) return null
+function createSupabaseClient(): SupabaseClient {
+  clearStaleSupabaseAuth(SUPABASE_URL)
 
-  const url = supabaseUrl!.trim()
-  const key = supabaseAnonKey!.trim()
-
-  clearStaleSupabaseAuth(url)
-
-  // 固定使用 anon 密钥，避免残留用户会话 JWT 导致 Authorization 失效 → 401
-  return createClient(url, key, {
-    accessToken: async () => key,
+  return createClient(SUPABASE_URL, SUPABASE_KEY, {
+    accessToken: async () => SUPABASE_KEY,
   })
 }
 
-export const supabase: SupabaseClient | null = createSupabaseClient()
+export const supabase: SupabaseClient = createSupabaseClient()
 
 export function getSupabase() {
-  if (!supabase) {
-    throw new Error(
-      "Supabase 未配置，请在 .env.local 设置 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY，并重启开发服务"
-    )
-  }
   return supabase
 }
