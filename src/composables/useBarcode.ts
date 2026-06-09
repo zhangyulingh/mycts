@@ -1,5 +1,4 @@
 import {ref} from "vue"
-import {Local} from "@/utils/storage"
 import {getSupabase, isSupabaseConfigured} from "@/utils/supabase"
 import {
   exportBarcodeExcel,
@@ -230,30 +229,12 @@ export const generateBarcodeId = async () => {
   return `${prefix}${seq}`
 }
 
-const SCAN_BASE_KEY = "barcodeScanBaseUrl"
+const SCAN_BASE_URL = "https://mycts.vercel.app"
 
-export const scanBaseUrl = ref(getScanBaseUrl())
+export const scanBaseUrl = ref(SCAN_BASE_URL)
 
 export function getScanBaseUrl() {
-  try {
-    const raw = window.localStorage.getItem(Local.setKey(SCAN_BASE_KEY))
-    if (raw) {
-      const url = JSON.parse(raw)
-      if (typeof url === "string" && url.trim()) return url.trim().replace(/\/$/, "")
-    }
-  } catch {
-    // ignore
-  }
-  const envUrl = import.meta.env.VITE_APP_SCAN_BASE_URL as string | undefined
-  if (envUrl?.trim()) return envUrl.trim().replace(/\/$/, "")
-  const path = window.location.pathname.replace(/\/$/, "")
-  return `${window.location.origin}${path}`
-}
-
-export function setScanBaseUrl(url: string) {
-  const value = url.trim().replace(/\/$/, "")
-  Local.set(SCAN_BASE_KEY, value)
-  scanBaseUrl.value = value
+  return SCAN_BASE_URL
 }
 
 /** 兼容旧版二维码（链接内编码 data） */
