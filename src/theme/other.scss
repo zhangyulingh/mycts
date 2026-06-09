@@ -1,0 +1,59 @@
+/* wangeditor 富文本编辑器
+------------------------------- */
+.editor-container {
+  z-index: 10; // 用于 wangeditor 点击全屏时
+  .w-e-toolbar {
+    border: 1px solid var(--el-border-color-light, #ebeef5) !important;
+    border-bottom: 1px solid var(--el-border-color-light, #ebeef5) !important;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    z-index: 2 !important;
+  }
+  .w-e-text-container {
+    border: 1px solid var(--el-border-color-light, #ebeef5) !important;
+    border-top: none !important;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    z-index: 1 !important;
+  }
+}
+/* ---el-table滚动条公共样式--- */
+.el-scrollbar {
+  .el-scrollbar__bar {
+    background-color: #f5f7fa;
+    border-radius: 4px;
+  }
+  .el-scrollbar__bar.is-vertical .el-scrollbar__thumb {
+    opacity: 1;
+    padding: 10px 0px;
+    margin-left: 1px;
+    width: 2px; // 纵向滑块的宽度
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+    height: 10px;
+    width: 4px;
+    border-radius: 10px;
+    background-color: #16baaa;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  }
+}
+.el-time-spinner__item.is-active:not(.is-disabled) {
+  color: #16baaa;
+  font-size: 18px;
+}
+
+[data-theme="dark"] {
+  // textarea - css vars
+  --w-e-textarea-bg-color: var(--el-color-white) !important;
+  --w-e-textarea-color: var(--el-text-color-primary) !important;
+
+  // toolbar - css vars
+  --w-e-toolbar-color: var(--el-text-color-primary) !important;
+  --w-e-toolbar-bg-color: var(--el-color-white) !important;
+  --w-e-toolbar-active-color: var(--el-text-color-primary) !important;
+  --w-e-toolbar-active-bg-color: var(--next-color-menu-hover) !important;
+  --w-e-toolbar-border-color: var(--el-border-color-light, #ebeef5) !important;
+
+  // modal - css vars
+  --w-e-modal-button-bg-color: var(--el-color-primary) !important;
+  --w-e-modal-button-border-color: var(--el-color-primary) !important;
+}

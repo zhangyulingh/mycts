@@ -1,0 +1,143 @@
+{
+  "success": true,
+  "code": 0,
+  "message": "供应商和设备型号数据获取成功",
+  "data": {
+    "suppliers": [
+      {
+        "id": 1,
+        "name": "深圳市未蓝新能源科技有限公司",
+        "deviceModels": [
+          {
+            "id": 1,
+            "name": "EnerArk-NBN-P100M0-215K"
+          },
+          {
+            "id": 2,
+            "name": "EnerArk-NBN-P200M0-430K"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "name": "宁德时代新能源科技股份有限公司",
+        "deviceModels": [
+          {
+            "id": 3,
+            "name": "CATL-ESS-100KWh"
+          },
+          {
+            "id": 4,
+            "name": "CATL-ESS-200KWh"
+          },
+          {
+            "id": 5,
+            "name": "CATL-ESS-500KWh"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "name": "比亚迪股份有限公司",
+        "deviceModels": [
+          {
+            "id": 6,
+            "name": "BYD-Box-Pro-100KWh"
+          },
+          {
+            "id": 7,
+            "name": "BYD-Box-Pro-200KWh"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "name": "常州天正智能装备有限公司",
+        "deviceModels": [
+          {
+            "id": 8,
+            "name": "TianZheng-ESS-100K"
+          },
+          {
+            "id": 9,
+            "name": "TianZheng-ESS-200K"
+          },
+          {
+            "id": 10,
+            "name": "TianZheng-ESS-500K"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "name": "阳光电源股份有限公司",
+        "deviceModels": [
+          {
+            "id": 11,
+            "name": "Sungrow-SG5000HV-M"
+          },
+          {
+            "id": 12,
+            "name": "Sungrow-SG10000HV-M"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "name": "华为技术有限公司",
+        "deviceModels": [
+          {
+            "id": 13,
+            "name": "FusionSolar-SmartLogger"
+          },
+          {
+            "id": 14,
+            "name": "FusionSolar-String-Inverter"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "name": "特变电工股份有限公司",
+        "deviceModels": [
+          {
+            "id": 15,
+            "name": "TBEA-ESS-100KWh"
+          },
+          {
+            "id": 16,
+            "name": "TBEA-ESS-250KWh"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "name": "科华数据股份有限公司",
+        "deviceModels": [
+          {
+            "id": 17,
+            "name": "KELONG-ESS-100K"
+          },
+          {
+            "id": 18,
+            "name": "KELONG-ESS-200K"
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "name": "南瑞集团有限公司",
+        "deviceModels": [
+          {
+            "id": 19,
+            "name": "NARI-ESS-100KWh"
+          },
+          {
+            "id": 20,
+            "name": "NARI-ESS-250KWh"
+          }
+        ]
+      }
+    ]
+  }
+}

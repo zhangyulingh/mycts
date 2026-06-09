@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>明业搅拌产品追溯系统</title>
+    <style type="text/css">
+      .theUA {
+        width: 1000px;
+        margin: 130px auto;
+      }
+      .theUA .a {
+        text-decoration: none;
+        color: #0072c6;
+      }
+      .theUA a:hover {
+        text-decoration: none;
+        color: #004d8c;
+      }
+      .theUA .h1 {
+        font-size: 40px;
+        line-height: 80px;
+        font-weight: 100;
+        margin-bottom: 10px;
+      }
+      .theUA .h2 {
+        font-size: 20px;
+        line-height: 25px;
+        font-weight: 100;
+        margin: 10px 0;
+      }
+      .theUA .p {
+        margin-bottom: 10px;
+      }
+      .theUA .hr {
+        margin: 20px 0;
+        border: 0;
+        border-top: 1px solid #dadada;
+      }
+      .theUA .span {
+        display: block;
+        font-size: 12px;
+        line-height: 12px;
+      }
+      .theUA .warning {
+        font-size: 16px;
+        color: red;
+      }
+      .theUA .clean {
+        clear: both;
+      }
+      .theUA .browser {
+        padding: 10px 10px;
+      }
+      .theUA .browser li {
+        width: auto;
+        padding: 0 80px;
+        margin-top: 30px;
+        height: 34px;
+        line-height: 22px;
+        float: left;
+        list-style: none;
+        padding-left: 40px;
+        background: url(https://img2022.cnblogs.com/blog/2844221/202206/2844221-20220602103825890-1551408284.png) no-repeat;
+      }
+      .theUA .browser .browser-firefox {
+        background-position: 0 -34px;
+      }
+      .theUA .browser .browser-Edge {
+        background-position: 0 -68px;
+        margin-left: 0px;
+      }
+      .theUA .browser .browser-360 {
+        background-position: 0 -170px;
+        margin-left: -27px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+    <script type="text/javascript">
+      /**
+       * 判断是否是ie
+       */
+      function isIE() {
+        const userAgent = navigator.userAgent
+        if (!!window.ActiveXObject || "ActiveXObject" in window) return true
+        // 判断是否为Chrome浏览器
+        if (/Chrome/.test(userAgent)) {
+          // 获取Chrome内核版本号
+          const chromeVersion = userAgent.match(/Chrome\/(\d+\.\d+)/)[1].split(".")
+          if (Number(chromeVersion[0]) >= 87) return false
+          else return true
+        } else return false
+      }
+
+      ;(function (window) {
+        if (isIE()) {
+          document.writeln(
+            "<div class='theUA'>" +
+              "<h1 class='h1'>请升级您的浏览器，以便我们更好的为您提供服务！</h1>" +
+              "<p class='p'>您正在使用 Internet Explorer 或使用该内核的浏览器。这意味着在升级浏览器前，您将无法访问此网站。</p>" +
+              "<hr class='hr'>" +
+              "<h2 class='h2'>请注意：微软公司对Windows XP 及 Internet Explorer 的支持已经结束</h2>" +
+              "<p class='p'>从 2022 年 6 月 15 日 开始，某些版本的 Windows 10 将不再支持 Internet Explorer 11 桌面应用程序。没有关键的浏览器安全更新，您的电脑可能易受有害病毒、间谍软件和其他恶意软件的攻击，它们可以窃取或损害您的业务数据和信息。请参阅 <a class='a' href='https://docs.microsoft.com/zh-cn/lifecycle/announcements/internet-explorer-11-end-of-support?rtc=1'>Internet Explorer 11 桌面应用程序终止对某些操作系统的支持说明</a></p>" +
+              "<hr  class='hr'>" +
+              "<h2 class='h2'>您可以选择更先进的浏览器 <span class='warning'>(如果使用双核浏览器，请切换到非兼容模式)</span></h2>" +
+              "<p class='p'>推荐使用以下浏览器的最新版本。如果您的电脑已有以下浏览器的最新版本则直接使用该浏览器访问即可。 </p>" +
+              "<ul class='browser'>" +
+              " <li class='browser-chrome'><a class='a' href='https://www.google.cn/chrome/browser/desktop/index.html?hl=zh-CN&standalone=1'> 谷歌浏览器<span class='span'>Google Chrome</span></a></li>" +
+              " <li class='browser-firefox'><a class='a' href='https://www.mozilla.org/zh-CN/firefox/new/ '> 火狐浏览器<span class='span'>Mozilla Firefox</span></a></li>" +
+              " <li class='browser-Edge'><a class='a' href='https://www.microsoft.com/zh-cn/edge?r=1#evergreen'>  Edge 浏览器<span class='span'>Microsoft Edge</span></a></li>" +
+              "</ul>" +
+              "</div>"
+          )
+          // console.log("浏览器不合格")
+          document.execCommand("Stop")
+        } else {
+          // document.writeln(" <div id='app'></div>")
+          // console.log("浏览器合格")
+        }
+      })(window)
+    </script>
+  </body>
+</html>
