@@ -25,9 +25,8 @@ onMounted(() => {
     <div class="leftText">{{ getThemeConfig.globalTitle }}</div>
   </div>
   <div class="loginContainer">
-    <div class="loginRight">
-      <div class="font-bold text-24px my-2">登录</div>
-      <div class="font-bold text-32px"></div>
+    <div class="loginCard">
+      <div class="loginCard__title">登录</div>
       <PswLogin />
     </div>
   </div>
@@ -35,20 +34,52 @@ onMounted(() => {
 </template>
 <style scoped lang="scss">
 .loginContainer {
-  --at-apply: flex justify-start items-center h-full w-full pl-80px bg-cover bg-no-repeat bg-[url(/images/bg_login.png)];
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  padding: clamp(72px, 12vw, 96px) clamp(16px, 5vw, 24px) clamp(24px, 5vw, 32px);
+  box-sizing: border-box;
+  background: url(/images/bg_login.png) center / cover no-repeat;
 }
 
-.loginRight {
-  --at-apply: w-400px h-500px px-60px py-55px text-#16baaa bg-[url(/images/login_bg.png)] bg-center bg-no-repeat bg-contain;
+.loginCard {
+  width: min(100%, 400px);
+  min-height: auto;
+  padding: clamp(28px, 6vw, 55px) clamp(24px, 6vw, 48px);
+  box-sizing: border-box;
+  color: #16baaa;
+  background: url(/images/login_bg.png) center / contain no-repeat;
+}
+
+.loginCard__title {
+  margin-bottom: clamp(12px, 3vw, 16px);
+  font-size: clamp(20px, 5vw, 24px);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .leftText {
   --at-apply: text-white font-bold text-32px text-#16baaa;
+  font-size: clamp(18px, 4vw, 32px);
+  line-height: 1.3;
 }
 
 .login-logo {
-  width: 40px;
-  height: 40px;
+  width: clamp(32px, 8vw, 40px);
+  height: clamp(32px, 8vw, 40px);
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .absolute.flex.items-center.gap-10px {
+    left: 12px;
+    right: 12px;
+    top: 12px;
+  }
 }
 </style>

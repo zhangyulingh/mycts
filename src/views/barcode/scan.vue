@@ -93,38 +93,50 @@ watch(() => route.query, loadRecord)
 <style scoped lang="scss">
 .scan-page {
   min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, #e8f8f6 0%, #f5f7fa 40%);
-  padding: 32px 20px 48px;
+  padding: clamp(20px, 5vw, 32px) clamp(12px, 4vw, 20px) clamp(32px, 6vw, 48px);
+  box-sizing: border-box;
 }
 
 .scan-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
+  width: 100%;
   max-width: 640px;
-  margin: 0 auto 24px;
+  margin: 0 auto clamp(16px, 4vw, 24px);
   padding: 0 4px;
+  flex-shrink: 0;
 }
 
 .scan-logo {
-  width: 40px;
-  height: 40px;
+  width: clamp(36px, 10vw, 40px);
+  height: clamp(36px, 10vw, 40px);
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .scan-title {
-  font-size: 22px;
+  font-size: clamp(18px, 5vw, 22px);
   font-weight: 700;
   color: #16baaa;
+  line-height: 1.3;
 }
 
 .scan-card {
+  width: 100%;
   max-width: 640px;
   margin: 0 auto;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(22, 186, 170, 0.12);
-  padding: 24px 24px 28px;
+  padding: clamp(18px, 4vw, 24px);
+  box-sizing: border-box;
+  flex: 0 1 auto;
 }
 
 .info-group + .info-group {
@@ -134,39 +146,51 @@ watch(() => route.query, loadRecord)
 }
 
 .group-title {
-  font-size: 16px;
+  font-size: clamp(15px, 4vw, 16px);
   font-weight: 700;
   color: #16baaa;
   margin-bottom: 16px;
   padding-left: 4px;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .info-row {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   padding: 12px 4px;
   border-bottom: 1px dashed #eef2f5;
-  gap: 16px;
+  gap: 6px 16px;
 }
 
 .info-label {
-  width: 88px;
-  flex-shrink: 0;
+  flex: 0 0 88px;
   color: #909399;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .info-value {
-  flex: 1;
+  flex: 1 1 160px;
+  min-width: 0;
   color: #303133;
-  word-break: break-all;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 56px 32px;
+  padding: clamp(40px, 10vw, 56px) clamp(20px, 5vw, 32px);
 }
 
 .empty-title {
-  font-size: 18px;
+  font-size: clamp(16px, 4vw, 18px);
   font-weight: 700;
   color: #303133;
   margin-bottom: 8px;
@@ -174,5 +198,27 @@ watch(() => route.query, loadRecord)
 
 .empty-desc {
   color: #909399;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+@media (max-width: 480px) {
+  .info-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .info-label {
+    flex: none;
+    width: 100%;
+    font-weight: 500;
+  }
+
+  .info-value {
+    flex: none;
+    width: 100%;
+    padding-left: 0;
+  }
 }
 </style>

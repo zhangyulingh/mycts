@@ -62,7 +62,7 @@ defineExpose({openDialog})
 <template>
   <el-dialog
     v-model="dialogVisible"
-    width="420px"
+    width="92%"
     :show-close="false"
     class="barcode-qrcode-dialog bg-[url(/images/qrcode_bg.jpg)] bg-cover no-header-dialog"
     id="barcode-dialog-container">
@@ -88,8 +88,13 @@ defineExpose({openDialog})
   display: none;
 }
 
+.el-overlay-dialog .el-dialog.barcode-qrcode-dialog {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
 .barcode-qrcode-dialog .el-dialog__body {
-  padding: 32px 28px 36px;
+  padding: clamp(24px, 6vw, 32px) clamp(20px, 5vw, 28px) clamp(28px, 6vw, 36px);
 }
 
 .qrcode-dialog-body {
@@ -100,17 +105,18 @@ defineExpose({openDialog})
   text-align: center;
   line-height: 1.9;
   gap: 6px;
+  width: 100%;
 }
 
 .qrcode-tag {
-  width: 56%;
+  width: min(56%, 220px);
   min-height: 44px;
   margin-top: 4px;
   margin-bottom: 8px;
   border-radius: 999px;
   background: #edf1fd;
   color: #0853af;
-  font-size: 18px;
+  font-size: clamp(15px, 4vw, 18px);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -121,35 +127,45 @@ defineExpose({openDialog})
 .qrcode-title {
   margin-top: 12px;
   margin-bottom: 8px;
-  font-size: 26px;
+  font-size: clamp(20px, 5.5vw, 26px);
   font-weight: 700;
   line-height: 1.4;
+  padding: 0 8px;
+  word-break: break-word;
 }
 
 .qrcode-info {
   margin-top: 6px;
-  font-size: 15px;
+  font-size: clamp(14px, 3.5vw, 15px);
   line-height: 1.8;
   padding: 0 8px;
+  word-break: break-word;
 }
 
 .qrcode-code-wrap {
-  width: 220px;
-  height: 220px;
+  width: min(220px, 70vw);
+  height: min(220px, 70vw);
   margin: 20px 0 16px;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  padding: 16px;
+  padding: clamp(12px, 3vw, 16px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.qrcode-code-wrap canvas,
+.qrcode-code-wrap img {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .qrcode-tip {
   margin-top: 8px;
-  font-size: 14px;
+  font-size: clamp(13px, 3.2vw, 14px);
   padding: 0 12px;
+  line-height: 1.6;
 }
 
 .qrcode-tip--sub {
@@ -161,8 +177,9 @@ defineExpose({openDialog})
 .qrcode-download {
   display: flex;
   justify-content: center;
-  margin-top: 28px;
+  margin-top: clamp(20px, 5vw, 28px);
   padding-top: 8px;
+  width: 100%;
 }
 
 .qrcode-download .el-button {

@@ -177,20 +177,20 @@ const refreshCaptcha = () => {
     </el-form-item>
     <!-- 验证码 -->
     <el-form-item prop="code" class="captcha-input">
-      <div class="flex items-center">
+      <div class="captcha-row">
         <ElInput
           v-model="formData.code"
           placeholder="请输入验证码"
-          class="h-60px"
+          class="captcha-row__input h-60px"
           clearable
           :prefix-icon="Message"
           @keyup.enter="submitForm(formRef)" />
-        <div class="ml-10px cursor-pointer" @click="refreshCaptcha">
+        <div class="captcha-row__code" @click="refreshCaptcha">
           <span class="flow-colorful">{{ captcha }}</span>
         </div>
       </div>
     </el-form-item>
-    <el-button type="primary" :loading="showLoading" class="mt-44px min-h-50px w-full text-18px" @click="submitForm(formRef)" size="large">
+    <el-button type="primary" :loading="showLoading" class="login-submit" @click="submitForm(formRef)" size="large">
       登 录
     </el-button>
   </el-form>
@@ -217,21 +217,48 @@ const refreshCaptcha = () => {
 
   .error :deep(.el-input__inner) {
     -webkit-text-fill-color: red;
-    // border-color: red !important;
     color: red !important;
   }
 }
 
+.captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__code {
+    flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;
+    min-width: 72px;
+    text-align: center;
+  }
+}
+
+.login-submit {
+  margin-top: clamp(24px, 6vw, 44px);
+  min-height: 50px;
+  width: 100%;
+  font-size: clamp(16px, 4vw, 18px);
+}
+
 .flow-colorful {
-  /*max-width: 600px;*/
-  height: 150px;
+  display: inline-block;
+  line-height: 1.2;
   background: linear-gradient(45deg, #00ffec, #75f4e4, #7886f4, #1086f4);
   animation: text-animation 1s ease-in-out infinite;
   color: transparent;
   background-clip: text;
   -webkit-background-clip: text;
-  font-size: 24px;
-  text-align: center;
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 700;
+  letter-spacing: 2px;
   text-decoration: line-through solid rgba(0, 0, 0, 0.5) 1px !important;
 }
 
@@ -241,6 +268,21 @@ const refreshCaptcha = () => {
   }
   to {
     filter: hue-rotate(360deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .captcha-row {
+    flex-wrap: wrap;
+
+    &__input {
+      flex: 1 1 100%;
+    }
+
+    &__code {
+      flex: 1 1 100%;
+      padding: 4px 0;
+    }
   }
 }
 </style>

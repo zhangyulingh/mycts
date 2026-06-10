@@ -15,7 +15,11 @@ import {
   canBindLocalFile,
   listLoading,
   isApiConfigured,
+  showBarcodeIdField,
 } from "@/composables/useBarcode"
+
+/** 暂时隐藏 Excel 导入/导出，改为 true 可恢复 */
+const showExcelModule = false
 
 const BarcodeForm = defineAsyncComponent(() => import("@/views/barcode/components/BarcodeForm.vue"))
 const QrcodeDialog = defineAsyncComponent(() => import("@/views/barcode/components/QrcodeDialog.vue"))
@@ -41,7 +45,7 @@ const onOpenQrcode = async (row: BarcodeRecord) => {
 }
 
 const onDelete = (row: BarcodeRecord) => {
-  ElMessageBox.confirm(`确定删除条码「${row.id}」吗？`, "提示", {
+  ElMessageBox.confirm(`确定删除「${row.productName || row.model || "该产品"}」吗？`, "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
@@ -155,23 +159,25 @@ onMounted(async () => {
 
       <div class="barcode-toolbar">
         <el-form :inline="true" :model="queryCondition" ref="queryFmRef" class="barcode-toolbar__form">
-          <el-form-item label="关键词" prop="Keywords">
+          <el-form-item label="关键词" prop="Keywords" class="barcode-toolbar__search-item">
             <div class="barcode-search-row">
               <el-input
                 v-model="queryCondition.Keywords"
-                placeholder="产品名称 / 型号 / 功率 / 条码"
+                placeholder="产品名称 / 型号 / 功率"
                 clearable
                 class="barcode-search-row__input"
                 @keyup.enter="queryBarcodeList()" />
-              <el-button type="primary" @click="queryBarcodeList()">查询</el-button>
-              <el-button @click="resetFields()">清除条件</el-button>
+              <div class="barcode-search-row__actions">
+                <el-button type="primary" @click="queryBarcodeList()">查询</el-button>
+                <el-button @click="resetFields()">清除条件</el-button>
+              </div>
             </div>
           </el-form-item>
         </el-form>
         <el-button type="primary" plain class="barcode-toolbar__action" @click="onOpenAdd">录入产品信息</el-button>
       </div>
 
-      <div class="barcode-file-bar">
+      <div v-if="showExcelModule" class="barcode-file-bar">
         <div class="barcode-file-bar__left">
           <span class="barcode-file-bar__label">本地 Excel：</span>
           <span v-if="boundExcelFileName" class="barcode-file-bar__name">已绑定 {{ boundExcelFileName }}，保存/删除时自动同步</span>
@@ -203,7 +209,7 @@ onMounted(async () => {
               {{ $index + 1 + (queryCondition.PageIndex - 1) * queryCondition.PageSize }}
             </template>
           </el-table-column>
-          <el-table-column prop="id" label="条码编号" min-width="130" show-overflow-tooltip />
+          <el-table-column v-if="showBarcodeIdField" prop="id" label="条码编号" min-width="130" show-overflow-tooltip />
           <el-table-column prop="productName" label="产品名称" min-width="140" show-overflow-tooltip />
           <el-table-column prop="model" label="型号" min-width="110" show-overflow-tooltip />
           <el-table-column prop="power" label="功率" min-width="100" show-overflow-tooltip />
@@ -213,11 +219,13 @@ onMounted(async () => {
           <el-table-column prop="color" label="颜色" min-width="90" show-overflow-tooltip />
           <el-table-column prop="weight" label="重量" min-width="90" show-overflow-tooltip />
           <el-table-column prop="packaging" label="包装" min-width="90" show-overflow-tooltip />
-          <el-table-column label="操作" fixed="right" width="240" align="center">
+          <el-table-column label="操作" fixed="right" min-width="200" align="center">
             <template #default="{row}">
-              <el-button link type="primary" @click="onOpenQrcode(row)">生成二维码</el-button>
-              <el-button link type="primary" @click="onOpenEdit(row)">编辑</el-button>
-              <el-button link type="danger" @click="onDelete(row)">删除</el-button>
+              <div class="barcode-table-actions">
+                <el-button link type="primary" @click="onOpenQrcode(row)">二维码</el-button>
+                <el-button link type="primary" @click="onOpenEdit(row)">编辑</el-button>
+                <el-button link type="danger" @click="onDelete(row)">删除</el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -243,49 +251,59 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .barcode-container {
+  height: 100%;
+  min-height: 0;
+
   .barcode-content {
-    padding: 20px 24px 24px;
+    padding: clamp(12px, 2vw, 24px);
     overflow: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: clamp(12px, 2vw, 16px);
+    min-height: 100%;
+    box-sizing: border-box;
   }
 
   .barcode-header {
     padding-bottom: 4px;
+    flex-shrink: 0;
 
     &__title {
-      font-size: 20px;
+      font-size: clamp(18px, 2.5vw, 20px);
       font-weight: 700;
       color: #303133;
-      line-height: 28px;
+      line-height: 1.4;
     }
 
     &__desc {
       margin-top: 6px;
-      font-size: 14px;
+      font-size: clamp(13px, 1.8vw, 14px);
       color: #909399;
-      line-height: 22px;
+      line-height: 1.6;
     }
   }
 
   .barcode-toolbar {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
+    align-items: flex-start;
+    gap: 12px 16px;
+    padding: clamp(12px, 2vw, 16px) clamp(14px, 2vw, 20px);
     background: #f8fafb;
     border: 1px solid #eef2f5;
     border-radius: 8px;
+    flex-shrink: 0;
 
     &__form {
-      flex: 1;
+      flex: 1 1 280px;
+      min-width: 0;
       margin-bottom: 0;
 
       :deep(.el-form-item) {
         margin-bottom: 0;
         margin-right: 0;
+        width: 100%;
       }
 
       :deep(.el-form-item__label) {
@@ -295,40 +313,60 @@ onMounted(async () => {
 
       :deep(.el-form-item__content) {
         line-height: 32px;
+        flex: 1;
+        min-width: 0;
       }
     }
 
+    &__search-item {
+      width: 100%;
+    }
+
     &__action {
-      flex-shrink: 0;
+      flex: 0 0 auto;
+      align-self: center;
     }
   }
 
   .barcode-search-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    flex-wrap: nowrap;
+    gap: 10px 12px;
+    width: 100%;
 
     &__input {
-      width: 280px;
+      flex: 1 1 200px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    &__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      flex: 0 0 auto;
     }
   }
 
   .barcode-file-bar {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 20px;
+    align-items: flex-start;
+    gap: 12px 16px;
+    padding: clamp(12px, 2vw, 14px) clamp(14px, 2vw, 20px);
     background: #fff;
     border: 1px dashed #dcdfe6;
     border-radius: 8px;
+    flex-shrink: 0;
 
     &__left {
-      flex: 1;
+      flex: 1 1 240px;
       min-width: 0;
       font-size: 14px;
-      line-height: 22px;
+      line-height: 1.6;
+      word-break: break-word;
     }
 
     &__label {
@@ -347,8 +385,9 @@ onMounted(async () => {
     &__actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      flex-shrink: 0;
+      gap: 8px;
+      flex: 0 0 auto;
+      justify-content: flex-end;
     }
   }
 
@@ -357,32 +396,104 @@ onMounted(async () => {
   }
 
   .barcode-summary {
-    padding: 14px 20px;
+    padding: clamp(12px, 2vw, 14px) clamp(14px, 2vw, 20px);
     background: #dafaf3;
     border: 1px solid #16baaa;
     border-radius: 8px;
     color: #303133;
-    font-size: 14px;
-    line-height: 22px;
+    font-size: clamp(13px, 1.8vw, 14px);
+    line-height: 1.6;
+    flex-shrink: 0;
 
     &__count {
       margin: 0 6px;
-      font-size: 20px;
+      font-size: clamp(18px, 3vw, 20px);
       font-weight: 700;
       color: #16baaa;
     }
   }
 
   .barcode-table-wrap {
-    flex: 1;
-    min-height: 0;
+    flex: 1 1 auto;
+    min-height: 200px;
+    min-width: 0;
     padding: 4px 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .barcode-table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 8px;
   }
 
   .barcode-pagination {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
     padding-top: 4px;
+    flex-shrink: 0;
+
+    :deep(.el-pagination) {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .barcode-container {
+    .barcode-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+
+      &__action {
+        width: 100%;
+        align-self: stretch;
+      }
+    }
+
+    .barcode-search-row {
+      &__input {
+        flex: 1 1 100%;
+      }
+
+      &__actions {
+        width: 100%;
+
+        .el-button {
+          flex: 1;
+        }
+      }
+    }
+
+    .barcode-file-bar__actions {
+      width: 100%;
+      justify-content: stretch;
+
+      .el-button {
+        flex: 1 1 calc(50% - 4px);
+        margin: 0;
+      }
+    }
+
+    .barcode-pagination {
+      justify-content: center;
+
+      :deep(.el-pagination) {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .barcode-container .barcode-file-bar__actions .el-button {
+    flex: 1 1 100%;
   }
 }
 

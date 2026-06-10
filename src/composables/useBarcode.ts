@@ -17,6 +17,9 @@ import {
 
 export const DEFAULT_PRODUCT_NAME = "F系列齿轮搅拌机"
 
+/** 暂时隐藏条码编号字段，改为 true 可恢复 */
+export const showBarcodeIdField = false
+
 export interface BarcodeRecord {
   id: string
   productName: string

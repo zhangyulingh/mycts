@@ -3,7 +3,7 @@ import {reactive, ref} from "vue"
 import type {FormInstance, FormRules} from "element-plus"
 import {ElMessage} from "element-plus"
 import type {BarcodeRecord} from "@/composables/useBarcode"
-import {DEFAULT_PRODUCT_NAME, generateBarcodeId, saveBarcode} from "@/composables/useBarcode"
+import {DEFAULT_PRODUCT_NAME, generateBarcodeId, saveBarcode, showBarcodeIdField} from "@/composables/useBarcode"
 
 const visible = ref(false)
 const formRef = ref<FormInstance>()
@@ -72,7 +72,7 @@ defineExpose({initAndShow})
   <el-dialog
     v-model="visible"
     :title="dialogType === 'add' ? '录入产品信息' : '编辑产品信息'"
-    width="820px"
+    width="92%"
     destroy-on-close
     class="barcode-form-dialog">
     <el-form
@@ -84,23 +84,23 @@ defineExpose({initAndShow})
       class="barcode-form">
       <div class="barcode-form-section">
         <div class="barcode-form-section__title">{{ form.productName || DEFAULT_PRODUCT_NAME }}</div>
-        <el-row :gutter="32">
-          <el-col :span="12">
+        <el-row :gutter="[16, 0]">
+          <el-col v-if="showBarcodeIdField" :xs="24" :sm="12">
             <el-form-item label="条码编号" prop="id">
               <el-input v-model="form.id" placeholder="可手动输入或修改条码编号" clearable />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="产品名称" prop="productName">
               <el-input v-model="form.productName" placeholder="F系列齿轮搅拌机" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="型号" prop="model">
               <el-input v-model="form.model" placeholder="如 F37~F157（需详询）" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="功率" prop="power">
               <el-input v-model="form.power" placeholder="如 0.18kw~75kw" />
             </el-form-item>
@@ -114,22 +114,22 @@ defineExpose({initAndShow})
                 placeholder="如 380v（三相）、防爆电机、防静电等" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="调速方式">
               <el-input v-model="form.speedControl" placeholder="调速 / 不可调速电机" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="转速方式">
               <el-input v-model="form.speedType" placeholder="固定式 / 转速根据客户搅拌目的选择" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="颜色">
               <el-input v-model="form.color" placeholder="根据客户需求任选" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :sm="12">
             <el-form-item label="重量">
               <el-input v-model="form.weight" placeholder="根据选定或定制机型" />
             </el-form-item>
@@ -172,8 +172,9 @@ defineExpose({initAndShow})
 
 .barcode-form-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 16px;
+  gap: 12px;
 }
 
 :deep(.el-form-item) {
@@ -197,22 +198,39 @@ defineExpose({initAndShow})
 
 <style lang="scss">
 .el-overlay-dialog .el-dialog.barcode-form-dialog {
+  max-width: 820px;
+  margin: 0 auto;
+
   .el-dialog__header {
-    padding: 24px 40px 16px !important;
+    padding: clamp(16px, 4vw, 24px) clamp(20px, 5vw, 40px) 16px !important;
     margin-right: 0;
   }
 
   .el-dialog__title {
-    font-size: 18px;
+    font-size: clamp(16px, 3vw, 18px);
     font-weight: 600;
   }
 
   .el-dialog__body {
-    padding: 12px 40px 20px !important;
+    padding: 12px clamp(16px, 5vw, 40px) 20px !important;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
   }
 
   .el-dialog__footer {
-    padding: 8px 40px 32px !important;
+    padding: 8px clamp(16px, 5vw, 40px) clamp(20px, 4vw, 32px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .el-overlay-dialog .el-dialog.barcode-form-dialog {
+    .barcode-form-footer {
+      width: 100%;
+
+      .el-button {
+        flex: 1;
+      }
+    }
   }
 }
 </style>
