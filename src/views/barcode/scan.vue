@@ -43,22 +43,16 @@ const infoGroups = computed(() => {
   const r = record.value
   return [
     {
-      title: "产品信息",
+      title: r.productName || "F系列齿轮搅拌机",
       items: [
-        {label: "条码编号", value: r.id},
-        {label: "产品名称", value: r.productName},
-        {label: "产品型号 / 编号", value: [r.productModel, r.productCode].filter(Boolean).join(" / ") || "-"},
-        {label: "产品规格", value: r.productSpec},
-      ],
-    },
-    {
-      title: "生产信息",
-      items: [
-        {label: "生产批次", value: r.batchNo},
-        {label: "生产日期", value: r.productionDate},
-        {label: "操作员", value: r.operator},
-        {label: "备注", value: r.remark},
-        {label: "录入时间", value: r.createTime},
+        {label: "型号", value: r.model},
+        {label: "功率", value: r.power},
+        {label: "规格", value: r.specification},
+        {label: "调速方式", value: r.speedControl},
+        {label: "转速方式", value: r.speedType},
+        {label: "颜色", value: r.color},
+        {label: "重量", value: r.weight},
+        {label: "包装", value: r.packaging},
       ],
     },
   ]

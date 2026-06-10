@@ -1,20 +1,22 @@
 import * as XLSX from "xlsx"
 import type {BarcodeRecord} from "@/composables/useBarcode"
 
+const DEFAULT_PRODUCT_NAME = "F系列齿轮搅拌机"
+
 const EXCEL_FILE_NAME = "条码产品记录.xlsx"
 const SHEET_NAME = "产品记录"
 
 const HEADER_MAP: Record<keyof BarcodeRecord, string> = {
   id: "条码编号",
   productName: "产品名称",
-  productModel: "产品型号",
-  productCode: "产品编号",
-  productSpec: "产品规格",
-  batchNo: "生产批次",
-  productionDate: "生产日期",
-  operator: "操作员",
-  remark: "备注",
-  createTime: "录入时间",
+  model: "型号",
+  power: "功率",
+  specification: "规格",
+  speedControl: "调速方式",
+  speedType: "转速方式",
+  color: "颜色",
+  weight: "重量",
+  packaging: "包装",
 }
 
 const REVERSE_HEADER_MAP = Object.fromEntries(Object.entries(HEADER_MAP).map(([k, v]) => [v, k])) as Record<string, keyof BarcodeRecord>
@@ -35,15 +37,15 @@ function excelRowToRecord(row: Record<string, unknown>): BarcodeRecord | null {
   if (!record.id) return null
   return {
     id: record.id,
-    productName: record.productName || "",
-    productModel: record.productModel || "",
-    productSpec: record.productSpec || "",
-    productCode: record.productCode || "",
-    batchNo: record.batchNo || "",
-    productionDate: record.productionDate || "",
-    operator: record.operator || "",
-    remark: record.remark || "",
-    createTime: record.createTime || "",
+    productName: record.productName || DEFAULT_PRODUCT_NAME,
+    model: record.model || "",
+    power: record.power || "",
+    specification: record.specification || "",
+    speedControl: record.speedControl || "",
+    speedType: record.speedType || "",
+    color: record.color || "",
+    weight: record.weight || "",
+    packaging: record.packaging || "",
   }
 }
 
@@ -52,15 +54,15 @@ function buildWorkbook(records: BarcodeRecord[]) {
   const sheet = XLSX.utils.json_to_sheet(rows)
   sheet["!cols"] = [
     {wch: 18},
-    {wch: 16},
+    {wch: 18},
+    {wch: 14},
     {wch: 14},
     {wch: 24},
-    {wch: 16},
+    {wch: 14},
     {wch: 14},
     {wch: 12},
-    {wch: 10},
-    {wch: 20},
-    {wch: 18},
+    {wch: 12},
+    {wch: 12},
   ]
   return {
     SheetNames: [SHEET_NAME],

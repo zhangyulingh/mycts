@@ -1,5 +1,12 @@
 import {ref} from "vue"
-import {getSupabase, isSupabaseConfigured} from "@/utils/supabase"
+import {
+  deleteProduct,
+  getProduct,
+  isApiBaseUrlConfigured,
+  listProducts,
+  saveProduct,
+  updateProduct,
+} from "@/utils/api"
 import {
   exportBarcodeExcel,
   importBarcodeExcel,
@@ -8,50 +15,71 @@ import {
   writeBarcodeExcelToHandle,
 } from "@/utils/barcodeExcel"
 
+export const DEFAULT_PRODUCT_NAME = "F系列齿轮搅拌机"
+
 export interface BarcodeRecord {
   id: string
   productName: string
-  productModel: string
-  productSpec: string
-  productCode: string
-  batchNo: string
-  productionDate: string
-  operator: string
-  remark: string
-  createTime: string
+  model: string
+  power: string
+  specification: string
+  speedControl: string
+  speedType: string
+  color: string
+  weight: string
+  packaging: string
 }
 
-const TABLE_NAME = "products"
-
 interface ProductRow {
-  id: string
+  id: number
   barcode: string
-  product_name: string
-  product_model: string | null
+  product_name: string | null
+  model: string | null
+  power: string | null
   specification: string | null
-  batch_no: string | null
-  production_date: string | null
-  operator: string | null
-  remark: string | null
+  speed_control: string | null
+  speed_type: string | null
+  color: string | null
+  weight: string | null
+  packaging: string | null
   created_at: string
 }
 
-function parseProductModel(raw: string | null) {
-  if (!raw) return {productModel: "", productCode: ""}
-  const sep = " / "
-  const idx = raw.indexOf(sep)
-  if (idx === -1) return {productModel: raw, productCode: ""}
-  return {productModel: raw.slice(0, idx), productCode: raw.slice(idx + sep.length)}
+function rowToRecord(row: ProductRow): BarcodeRecord {
+  return {
+    id: row.barcode,
+    productName: row.product_name || DEFAULT_PRODUCT_NAME,
+    model: row.model || "",
+    power: row.power || "",
+    specification: row.specification || "",
+    speedControl: row.speed_control || "",
+    speedType: row.speed_type || "",
+    color: row.color || "",
+    weight: row.weight || "",
+    packaging: row.packaging || "",
+  }
 }
 
-function formatProductModel(model: string, code: string) {
-  if (model && code) return `${model} / ${code}`
-  return model || code || ""
+function recordToProduct(record: BarcodeRecord) {
+  return {
+    barcode: record.id.trim(),
+    product_name: record.productName || DEFAULT_PRODUCT_NAME,
+    model: record.model,
+    power: record.power,
+    specification: record.specification,
+    speed_control: record.speedControl,
+    speed_type: record.speedType,
+    color: record.color,
+    weight: record.weight,
+    packaging: record.packaging,
+  }
 }
 
-function formatCreatedAt(createdAt: string | null | undefined) {
-  if (!createdAt) return ""
-  return createdAt.replace("T", " ").slice(0, 19)
+function normalizeApiError(error: any) {
+  const message = error?.message || "后端 API 请求失败"
+  if (message.includes("404")) return "未找到产品信息"
+  if (message.includes("409") || message.includes("already exists")) return "条码编号已存在，请更换"
+  return message
 }
 
 export const queryCondition = ref({
@@ -70,60 +98,26 @@ export const listLoading = ref(false)
 let localExcelHandle: FileSystemFileHandle | null = null
 export const boundExcelFileName = ref("")
 
-function rowToRecord(row: ProductRow): BarcodeRecord {
-  const {productModel, productCode} = parseProductModel(row.product_model)
-  return {
-    id: row.barcode,
-    productName: row.product_name || "",
-    productModel,
-    productSpec: row.specification || "",
-    productCode,
-    batchNo: row.batch_no || "",
-    productionDate: row.production_date || "",
-    operator: row.operator || "",
-    remark: row.remark || "",
-    createTime: formatCreatedAt(row.created_at),
-  }
-}
+function filterRecords(records: BarcodeRecord[], keyword: string) {
+  const value = keyword.trim().toLowerCase()
+  if (!value) return records
 
-function recordToRow(record: BarcodeRecord): Omit<ProductRow, "id" | "created_at"> {
-  return {
-    barcode: record.id,
-    product_name: record.productName,
-    product_model: formatProductModel(record.productModel, record.productCode),
-    specification: record.productSpec,
-    batch_no: record.batchNo,
-    production_date: record.productionDate,
-    operator: record.operator,
-    remark: record.remark,
-  }
-}
-
-function assertSupabaseReady() {
-  if (!isSupabaseConfigured) {
-    throw new Error("Supabase 未配置，请在 .env.local 中设置 VITE_SUPABASE_URL 和 VITE_SUPABASE_PUBLISHABLE_KEY")
-  }
-}
-
-function throwIfError(error: {code?: string; message?: string; status?: number} | null) {
-  if (!error) return
-  if (error.code === "PGRST205") {
-    throw new Error(`数据表 ${TABLE_NAME} 不存在，请检查 Supabase 表名与字段是否已创建`)
-  }
-  if (
-    error.status === 401 ||
-    error.code === "PGRST301" ||
-    error.message?.includes("Invalid API key") ||
-    error.message?.includes("JWT")
-  ) {
-    throw new Error(
-      "Supabase 鉴权失败（401）：请确认 .env.local 中 VITE_SUPABASE_ANON_KEY 正确，重启 npm run dev 后硬刷新页面"
-    )
-  }
-  if (error.code === "42501" || error.message?.includes("row-level security")) {
-    throw new Error("无写入权限：请在 Supabase SQL Editor 执行 supabase/fix-rls.sql 开放 products 表读写策略")
-  }
-  throw new Error(error.message || "Supabase 请求失败")
+  return records.filter((record) =>
+    [
+      record.id,
+      record.productName,
+      record.model,
+      record.power,
+      record.specification,
+      record.speedControl,
+      record.speedType,
+      record.color,
+      record.weight,
+      record.packaging,
+    ]
+      .filter(Boolean)
+      .some((item) => String(item).toLowerCase().includes(value))
+  )
 }
 
 async function syncToLocalExcel() {
@@ -139,97 +133,78 @@ async function syncToLocalExcel() {
 }
 
 export const queryBarcodeList = async () => {
-  assertSupabaseReady()
   listLoading.value = true
   try {
     const {PageIndex, PageSize, Keywords} = queryCondition.value
-    const from = (PageIndex - 1) * PageSize
-    const to = from + PageSize - 1
-    let query = getSupabase().from(TABLE_NAME).select("*", {count: "exact"})
+    const allRecords = await fetchAllBarcodes()
+    const filteredRecords = filterRecords(allRecords, Keywords)
+    const start = (PageIndex - 1) * PageSize
 
-    const keyword = Keywords.trim()
-    if (keyword) {
-      const pattern = `%${keyword}%`
-      query = query.or(
-        `product_name.ilike.${pattern},barcode.ilike.${pattern},batch_no.ilike.${pattern},product_model.ilike.${pattern},specification.ilike.${pattern},operator.ilike.${pattern},remark.ilike.${pattern}`
-      )
-    }
-
-    const {data, count, error} = await query.order("created_at", {ascending: false}).range(from, to)
-    if (error) throwIfError(error)
-
-    queriedResult.value.total = count || 0
-    queriedResult.value.list = (data as ProductRow[] | null)?.map(rowToRecord) || []
+    queriedResult.value.total = filteredRecords.length
+    queriedResult.value.list = filteredRecords.slice(start, start + PageSize)
   } finally {
     listLoading.value = false
   }
 }
 
 export const fetchAllBarcodes = async () => {
-  assertSupabaseReady()
-  const {data, error} = await getSupabase()
-    .from(TABLE_NAME)
-    .select("*")
-    .order("created_at", {ascending: false})
-    .limit(10000)
-  if (error) throwIfError(error)
-  return ((data as ProductRow[] | null) || []).map(rowToRecord)
+  try {
+    const data = await listProducts(10000)
+    return (data as ProductRow[]).map(rowToRecord)
+  } catch (error: any) {
+    throw new Error(normalizeApiError(error))
+  }
 }
 
 export const fetchBarcodeById = async (id: string) => {
   if (!id) return null
-  assertSupabaseReady()
-  const {data, error} = await getSupabase().from(TABLE_NAME).select("*").eq("barcode", id).maybeSingle()
-  if (error) throwIfError(error)
-  return data ? rowToRecord(data as ProductRow) : null
+  try {
+    const data = await getProduct(id)
+    return data ? rowToRecord(data as ProductRow) : null
+  } catch (error: any) {
+    if (error?.message?.includes("404") || error?.message?.includes("not found")) return null
+    throw new Error(normalizeApiError(error))
+  }
 }
 
 export const saveBarcode = async (record: BarcodeRecord, originalBarcode?: string) => {
-  assertSupabaseReady()
   const barcode = record.id.trim()
   if (!barcode) throw new Error("请输入条码编号")
 
-  const row = recordToRow({...record, id: barcode})
-  const supabase = getSupabase()
+  try {
+    if (originalBarcode) {
+      await updateProduct(originalBarcode, recordToProduct({...record, id: barcode}))
+    } else {
+      await saveProduct(recordToProduct({...record, id: barcode}))
+    }
 
-  if (originalBarcode && originalBarcode !== barcode) {
-    const conflict = await fetchBarcodeById(barcode)
-    if (conflict) throw new Error("条码编号已存在，请更换")
-
-    const {error} = await supabase.from(TABLE_NAME).update(row).eq("barcode", originalBarcode)
-    if (error) throwIfError(error)
-  } else {
-    const {error} = await supabase.from(TABLE_NAME).upsert(row, {onConflict: "barcode"})
-    if (error) throwIfError(error)
+    await queryBarcodeList()
+    await syncToLocalExcel()
+  } catch (error: any) {
+    throw new Error(normalizeApiError(error))
   }
-
-  await queryBarcodeList()
-  await syncToLocalExcel()
 }
 
 export const deleteBarcode = async (id: string) => {
-  assertSupabaseReady()
-  const {error} = await getSupabase().from(TABLE_NAME).delete().eq("barcode", id)
-  if (error) throwIfError(error)
-  await queryBarcodeList()
-  await syncToLocalExcel()
+  try {
+    await deleteProduct(id)
+    await queryBarcodeList()
+    await syncToLocalExcel()
+  } catch (error: any) {
+    throw new Error(normalizeApiError(error))
+  }
 }
 
 export const generateBarcodeId = async () => {
-  assertSupabaseReady()
   const date = new Date()
   const dateStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`
   const prefix = `BC${dateStr}`
-  const {count, error} = await getSupabase()
-    .from(TABLE_NAME)
-    .select("*", {count: "exact", head: true})
-    .like("barcode", `${prefix}%`)
-  if (error) throwIfError(error)
-  const seq = String((count || 0) + 1).padStart(4, "0")
-  return `${prefix}${seq}`
+  const records = await fetchAllBarcodes()
+  const count = records.filter((record) => record.id.startsWith(prefix)).length
+  return `${prefix}${String(count + 1).padStart(4, "0")}`
 }
 
-const SCAN_BASE_URL = "https://mycts.vercel.app"
+const SCAN_BASE_URL = import.meta.env.VITE_APP_SCAN_BASE_URL || window.location.origin
 
 export const scanBaseUrl = ref(SCAN_BASE_URL)
 
@@ -237,20 +212,18 @@ export function getScanBaseUrl() {
   return SCAN_BASE_URL
 }
 
-/** 兼容旧版二维码（链接内编码 data） */
 export function decodeBarcodeData(encoded: string): BarcodeRecord | null {
   try {
     let base64 = encoded.replace(/-/g, "+").replace(/_/g, "/")
     while (base64.length % 4) base64 += "="
     const json = decodeURIComponent(escape(atob(base64)))
-    const record = JSON.parse(json) as BarcodeRecord
-    return record?.id ? record : null
+    const record = JSON.parse(json) as Partial<BarcodeRecord>
+    return record?.id ? (record as BarcodeRecord) : null
   } catch {
     return null
   }
 }
 
-/** 二维码短链接：扫码后从 Supabase 按 id 查询 */
 export function getBarcodeQrUrl(record: BarcodeRecord) {
   return `${getScanBaseUrl()}#/barcode/scan?id=${encodeURIComponent(record.id)}`
 }
@@ -287,14 +260,19 @@ export const importRecordsFromExcel = async (file: File) => {
     return {success: false, message: "Excel 中没有有效数据"}
   }
 
-  assertSupabaseReady()
-  const {error} = await getSupabase().from(TABLE_NAME).upsert(records.map(recordToRow), {onConflict: "barcode"})
-  if (error) throwIfError(error)
+  for (const record of records) {
+    const existing = await fetchBarcodeById(record.id)
+    if (existing) {
+      await updateProduct(record.id, recordToProduct(record))
+    } else {
+      await saveProduct(recordToProduct(record))
+    }
+  }
 
   await queryBarcodeList()
   await syncToLocalExcel()
-  return {success: true, message: `已导入 ${records.length} 条记录到 Supabase`}
+  return {success: true, message: `已导入 ${records.length} 条记录到后端数据库`}
 }
 
 export const canBindLocalFile = isFileSystemAccessSupported()
-export {isSupabaseConfigured}
+export const isApiConfigured = isApiBaseUrlConfigured()

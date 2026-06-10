@@ -14,7 +14,7 @@ import {
   boundExcelFileName,
   canBindLocalFile,
   listLoading,
-  isSupabaseConfigured,
+  isApiConfigured,
 } from "@/composables/useBarcode"
 
 const BarcodeForm = defineAsyncComponent(() => import("@/views/barcode/components/BarcodeForm.vue"))
@@ -41,7 +41,7 @@ const onOpenQrcode = async (row: BarcodeRecord) => {
 }
 
 const onDelete = (row: BarcodeRecord) => {
-  ElMessageBox.confirm(`确定删除产品「${row.productName}」吗？`, "提示", {
+  ElMessageBox.confirm(`确定删除条码「${row.id}」吗？`, "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
@@ -125,8 +125,8 @@ const handleSizeChange = (size: number) => {
 }
 
 onMounted(async () => {
-  if (!isSupabaseConfigured) {
-    ElMessage.warning("请先在 .env.local 配置 Supabase，并确认 products 表已创建")
+  if (!isApiConfigured) {
+    ElMessage.warning("请先在 .env.local 配置后端 API，并确认 PostgreSQL products 表已创建")
     return
   }
   try {
@@ -142,12 +142,12 @@ onMounted(async () => {
     <div class="barcode-content layout-padding-auto layout-padding-view">
       <div class="barcode-header">
         <div class="barcode-header__title">条码系统</div>
-        <div class="barcode-header__desc">录入产品信息保存到 Supabase 云端；二维码为短链接，客户微信扫码打开 H5 页面查看</div>
+        <div class="barcode-header__desc">录入产品信息保存到自建后端 API；二维码为短链接，客户微信扫码打开 H5 页面查看</div>
       </div>
 
       <el-alert
-        v-if="!isSupabaseConfigured"
-        title="Supabase 未配置：本地在 .env.local 填写；Vercel 部署请在 Project Settings → Environment Variables 添加 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY 后重新部署"
+        v-if="!isApiConfigured"
+        title="后端 API 未配置：请在 .env.local 填写 VITE_API_BASE_URL，并确认 Express 服务和 PostgreSQL 已启动"
         type="error"
         show-icon
         :closable="false"
@@ -159,7 +159,7 @@ onMounted(async () => {
             <div class="barcode-search-row">
               <el-input
                 v-model="queryCondition.Keywords"
-                placeholder="产品名称/编号/批次/条码"
+                placeholder="产品名称 / 型号 / 功率 / 条码"
                 clearable
                 class="barcode-search-row__input"
                 @keyup.enter="queryBarcodeList()" />
@@ -193,7 +193,7 @@ onMounted(async () => {
       <div class="barcode-summary">
         当前已录入产品
         <span class="barcode-summary__count">{{ queriedResult.total }}</span>
-        条，数据保存在 Supabase，全国客户扫码均可查询。
+        条，数据保存在 PostgreSQL，全国客户扫码均可查询。
       </div>
 
       <div class="barcode-table-wrap">
@@ -203,16 +203,16 @@ onMounted(async () => {
               {{ $index + 1 + (queryCondition.PageIndex - 1) * queryCondition.PageSize }}
             </template>
           </el-table-column>
-          <el-table-column prop="id" label="条码编号" min-width="140" show-overflow-tooltip />
+          <el-table-column prop="id" label="条码编号" min-width="130" show-overflow-tooltip />
           <el-table-column prop="productName" label="产品名称" min-width="140" show-overflow-tooltip />
-          <el-table-column label="产品型号 / 编号" min-width="180" show-overflow-tooltip>
-            <template #default="{row}">
-              {{ row.productModel }}{{ row.productModel && row.productCode ? " / " : "" }}{{ row.productCode }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="batchNo" label="生产批次" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="productionDate" label="生产日期" min-width="110" align="center" />
-          <el-table-column prop="createTime" label="录入时间" min-width="160" show-overflow-tooltip />
+          <el-table-column prop="model" label="型号" min-width="110" show-overflow-tooltip />
+          <el-table-column prop="power" label="功率" min-width="100" show-overflow-tooltip />
+          <el-table-column prop="specification" label="规格" min-width="160" show-overflow-tooltip />
+          <el-table-column prop="speedControl" label="调速方式" min-width="110" show-overflow-tooltip />
+          <el-table-column prop="speedType" label="转速方式" min-width="110" show-overflow-tooltip />
+          <el-table-column prop="color" label="颜色" min-width="90" show-overflow-tooltip />
+          <el-table-column prop="weight" label="重量" min-width="90" show-overflow-tooltip />
+          <el-table-column prop="packaging" label="包装" min-width="90" show-overflow-tooltip />
           <el-table-column label="操作" fixed="right" width="240" align="center">
             <template #default="{row}">
               <el-button link type="primary" @click="onOpenQrcode(row)">生成二维码</el-button>

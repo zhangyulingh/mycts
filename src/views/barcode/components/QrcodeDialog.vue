@@ -50,7 +50,7 @@ const generateAndDownload = () => {
     html2canvas(dialog).then((canvas) => {
       const a = document.createElement("a")
       a.href = canvas.toDataURL("image/png")
-      a.download = `条码-${props.record?.productCode || "二维码"}.png`
+      a.download = `条码-${props.record?.id || "二维码"}.png`
       a.click()
     })
   }, 500)
@@ -68,16 +68,14 @@ defineExpose({openDialog})
     id="barcode-dialog-container">
     <div class="qrcode-dialog-body">
       <div class="qrcode-tag">· 产品追溯 ·</div>
-      <div class="qrcode-title">扫码查看产品信息</div>
-      <div class="qrcode-info">
-        产品型号 / 编号：{{ record?.productModel }}{{ record?.productModel && record?.productCode ? " / " : "" }}{{ record?.productCode }}
-      </div>
-      <div class="qrcode-info">产品名称：{{ record?.productName }}</div>
+      <div class="qrcode-title">{{ record?.productName || "F系列齿轮搅拌机" }}</div>
+      <div class="qrcode-info">型号：{{ record?.model || "-" }}</div>
+      <div class="qrcode-info">功率：{{ record?.power || "-" }}</div>
       <div class="qrcode-code-wrap">
         <div id="barcode-qrcode"></div>
       </div>
       <div class="qrcode-tip">微信扫一扫打开产品信息页面</div>
-      <div class="qrcode-tip qrcode-tip--sub">短链接扫码，数据从 Supabase 云端读取</div>
+      <div class="qrcode-tip qrcode-tip--sub">短链接扫码，数据从后端 API 读取</div>
     </div>
     <div class="qrcode-download">
       <el-button @click="generateAndDownload">下载</el-button>

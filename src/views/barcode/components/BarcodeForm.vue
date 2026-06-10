@@ -2,9 +2,8 @@
 import {reactive, ref} from "vue"
 import type {FormInstance, FormRules} from "element-plus"
 import {ElMessage} from "element-plus"
-import dayjs from "dayjs"
 import type {BarcodeRecord} from "@/composables/useBarcode"
-import {generateBarcodeId, saveBarcode} from "@/composables/useBarcode"
+import {DEFAULT_PRODUCT_NAME, generateBarcodeId, saveBarcode} from "@/composables/useBarcode"
 
 const visible = ref(false)
 const formRef = ref<FormInstance>()
@@ -14,15 +13,15 @@ const originalBarcode = ref("")
 
 const createEmptyForm = (): BarcodeRecord => ({
   id: "",
-  productName: "",
-  productModel: "",
-  productSpec: "",
-  productCode: "",
-  batchNo: "",
-  productionDate: dayjs().format("YYYY-MM-DD"),
-  operator: "",
-  remark: "",
-  createTime: "",
+  productName: DEFAULT_PRODUCT_NAME,
+  model: "",
+  power: "",
+  specification: "",
+  speedControl: "",
+  speedType: "",
+  color: "",
+  weight: "",
+  packaging: "",
 })
 
 const form = reactive<BarcodeRecord>(createEmptyForm())
@@ -30,10 +29,8 @@ const form = reactive<BarcodeRecord>(createEmptyForm())
 const rules = reactive<FormRules>({
   id: [{required: true, message: "请输入条码编号", trigger: "blur"}],
   productName: [{required: true, message: "请输入产品名称", trigger: "blur"}],
-  productModel: [{required: true, message: "请输入产品型号", trigger: "blur"}],
-  productCode: [{required: true, message: "请输入产品编号", trigger: "blur"}],
-  batchNo: [{required: true, message: "请输入生产批次", trigger: "blur"}],
-  productionDate: [{required: true, message: "请选择生产日期", trigger: "change"}],
+  model: [{required: true, message: "请输入型号", trigger: "blur"}],
+  power: [{required: true, message: "请输入功率", trigger: "blur"}],
 })
 
 const initAndShow = async (type: "add" | "edit", record?: BarcodeRecord) => {
@@ -57,9 +54,6 @@ const submit = async () => {
     if (!valid) return
     submitting.value = true
     try {
-      if (dialogType.value === "add") {
-        form.createTime = dayjs().format("YYYY-MM-DD HH:mm:ss")
-      }
       await saveBarcode({...form, id: form.id.trim()}, dialogType.value === "edit" ? originalBarcode.value : undefined)
       ElMessage.success(dialogType.value === "add" ? "录入成功" : "保存成功")
       visible.value = false
@@ -89,7 +83,7 @@ defineExpose({initAndShow})
       size="large"
       class="barcode-form">
       <div class="barcode-form-section">
-        <div class="barcode-form-section__title">产品信息</div>
+        <div class="barcode-form-section__title">{{ form.productName || DEFAULT_PRODUCT_NAME }}</div>
         <el-row :gutter="32">
           <el-col :span="12">
             <el-form-item label="条码编号" prop="id">
@@ -98,53 +92,51 @@ defineExpose({initAndShow})
           </el-col>
           <el-col :span="12">
             <el-form-item label="产品名称" prop="productName">
-              <el-input v-model="form.productName" placeholder="请输入产品名称" />
+              <el-input v-model="form.productName" placeholder="F系列齿轮搅拌机" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="产品型号" prop="productModel">
-              <el-input v-model="form.productModel" placeholder="请输入产品型号" />
+            <el-form-item label="型号" prop="model">
+              <el-input v-model="form.model" placeholder="如 F37~F157（需详询）" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="产品编号" prop="productCode">
-              <el-input v-model="form.productCode" placeholder="请输入产品编号" />
+            <el-form-item label="功率" prop="power">
+              <el-input v-model="form.power" placeholder="如 0.18kw~75kw" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="产品规格">
-              <el-input v-model="form.productSpec" placeholder="请输入产品规格" type="textarea" :rows="3" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
-
-      <div class="barcode-form-section">
-        <div class="barcode-form-section__title">生产信息</div>
-        <el-row :gutter="32">
-          <el-col :span="12">
-            <el-form-item label="生产批次" prop="batchNo">
-              <el-input v-model="form.batchNo" placeholder="请输入生产批次" />
+            <el-form-item label="规格">
+              <el-input
+                v-model="form.specification"
+                type="textarea"
+                :rows="2"
+                placeholder="如 380v（三相）、防爆电机、防静电等" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="生产日期" prop="productionDate">
-              <el-date-picker
-                v-model="form.productionDate"
-                type="date"
-                value-format="YYYY-MM-DD"
-                placeholder="选择生产日期"
-                class="w-full" />
+            <el-form-item label="调速方式">
+              <el-input v-model="form.speedControl" placeholder="调速 / 不可调速电机" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="操作员">
-              <el-input v-model="form.operator" placeholder="请输入操作员" />
+            <el-form-item label="转速方式">
+              <el-input v-model="form.speedType" placeholder="固定式 / 转速根据客户搅拌目的选择" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="颜色">
+              <el-input v-model="form.color" placeholder="根据客户需求任选" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="重量">
+              <el-input v-model="form.weight" placeholder="根据选定或定制机型" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="备注">
-              <el-input v-model="form.remark" placeholder="请输入备注" type="textarea" :rows="3" />
+            <el-form-item label="包装">
+              <el-input v-model="form.packaging" placeholder="如 木箱" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -166,12 +158,6 @@ defineExpose({initAndShow})
 
 .barcode-form-section {
   padding: 8px 12px 12px;
-
-  & + & {
-    margin-top: 12px;
-    padding-top: 20px;
-    border-top: 1px solid #eef2f5;
-  }
 
   &__title {
     margin-bottom: 20px;
@@ -204,13 +190,8 @@ defineExpose({initAndShow})
 }
 
 :deep(.el-input),
-:deep(.el-date-editor) {
+:deep(.el-textarea) {
   width: 100%;
-}
-
-:deep(.el-textarea__inner) {
-  min-height: 88px !important;
-  padding: 12px 14px;
 }
 </style>
 
