@@ -6,80 +6,38 @@ import {NextLoading} from "@/utils/loading"
 import PswLogin from "./components/PswLogin.vue"
 import logoImg from "@/assets/img/logo.png"
 
-// 定义变量内容
 const storesThemeConfig = useThemeConfig()
 const {themeConfig} = storeToRefs(storesThemeConfig)
 
-// 获取布局配置信息
 const getThemeConfig = computed(() => {
   return themeConfig.value
 })
-// 页面加载时
+
 onMounted(() => {
   NextLoading.done()
 })
 </script>
+
 <template>
-  <div class="absolute flex items-center gap-10px top-15 left-15">
-    <img :src="logoImg" class="login-logo" alt="logo" />
-    <div class="leftText">{{ getThemeConfig.globalTitle }}</div>
-  </div>
-  <div class="loginContainer">
-    <div class="loginCard">
-      <div class="loginCard__title">登录</div>
-      <PswLogin />
+  <div
+    class="relative min-h-100vh min-h-100dvh w-full overflow-x-hidden bg-[url(/images/bg_login.png)] bg-cover bg-center bg-no-repeat">
+    <div
+      class="absolute top-12 left-0 right-0 z-1 flex w-full flex-col items-center  gap-8px px-12px text-center md:top-15 md:left-15 md:right-auto md:w-auto md:max-w-[calc(100%-30px)] md:flex-row md:items-center md:gap-10px md:px-0 md:text-left">
+      <img :src="logoImg" class="h-72px w-72px shrink-0 object-contain md:h-64px md:w-64px" alt="logo" />
+      <div class="text-#16baaa max-w-full break-words text-4xl font-bold leading-snug">
+        {{ getThemeConfig.globalTitle }}
+      </div>
+    </div>
+
+    <div
+      class="relative z-1 box-border flex min-h-100vh min-h-100dvh w-full min-w-0 items-center justify-center px-12px py-24px pt-[clamp(80px,18vw,120px)] pb-[clamp(24px,5vw,32px)] md:px-16px">
+      <div
+        class="box-border w-full min-w-0 max-w-400px text-#16baaa bg-[url(/images/login_bg.png)] bg-[length:100%_100%] bg-center bg-no-repeat px-16px py-24px md:px-[clamp(24px,6vw,48px)] md:py-[clamp(28px,6vw,55px)]">
+        <div class="mb-[clamp(12px,3vw,16px)] text-center text-4xl font-bold leading-snug">
+          用户登录
+        </div>
+        <PswLogin class="w-full min-w-0" />
+      </div>
     </div>
   </div>
-  <div class="absolute bottom-15 left-0 right-0 text-center text-#6B6B6B"></div>
 </template>
-<style scoped lang="scss">
-.loginContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  width: 100%;
-  padding: clamp(72px, 12vw, 96px) clamp(16px, 5vw, 24px) clamp(24px, 5vw, 32px);
-  box-sizing: border-box;
-  background: url(/images/bg_login.png) center / cover no-repeat;
-}
-
-.loginCard {
-  width: min(100%, 400px);
-  min-height: auto;
-  padding: clamp(28px, 6vw, 55px) clamp(24px, 6vw, 48px);
-  box-sizing: border-box;
-  color: #16baaa;
-  background: url(/images/login_bg.png) center / contain no-repeat;
-}
-
-.loginCard__title {
-  margin-bottom: clamp(12px, 3vw, 16px);
-  font-size: clamp(20px, 5vw, 24px);
-  font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
-}
-
-.leftText {
-  --at-apply: text-white font-bold text-32px text-#16baaa;
-  font-size: clamp(18px, 4vw, 32px);
-  line-height: 1.3;
-}
-
-.login-logo {
-  width: clamp(32px, 8vw, 40px);
-  height: clamp(32px, 8vw, 40px);
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-@media (max-width: 480px) {
-  .absolute.flex.items-center.gap-10px {
-    left: 12px;
-    right: 12px;
-    top: 12px;
-  }
-}
-</style>

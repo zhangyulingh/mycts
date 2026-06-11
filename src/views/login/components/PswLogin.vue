@@ -154,21 +154,21 @@ const refreshCaptcha = () => {
 }
 </script>
 <template>
-  <el-form ref="formRef" :model="formData" :rules="rules">
-    <el-form-item prop="userName" class="captcha-input">
+  <el-form ref="formRef" :model="formData" :rules="rules" class="w-full min-w-0">
+    <el-form-item prop="userName" class="captcha-input w-full">
       <ElInput
         v-model="formData.userName"
         placeholder="请输入用户名"
-        class="h-60px"
+        class="h-50px w-full min-w-0 md:h-60px"
         clearable
         :prefix-icon="User"
         @keyup.enter="submitForm(formRef)" />
     </el-form-item>
-    <el-form-item prop="pwd" class="captcha-input">
+    <el-form-item prop="pwd" class="captcha-input w-full">
       <ElInput
         v-model="formData.pwd"
         placeholder="请输入密码"
-        class="h-60px w-full"
+        class="h-50px w-full min-w-0 md:h-60px"
         :class="{error: isPasswordError}"
         clearable
         show-password
@@ -176,21 +176,27 @@ const refreshCaptcha = () => {
         @keyup.enter="submitForm(formRef)" />
     </el-form-item>
     <!-- 验证码 -->
-    <el-form-item prop="code" class="captcha-input">
-      <div class="captcha-row">
+    <el-form-item prop="code" class="captcha-input w-full">
+      <div class="flex w-full min-w-0 flex-col items-stretch gap-12px md:flex-row md:items-center">
         <ElInput
           v-model="formData.code"
           placeholder="请输入验证码"
-          class="captcha-row__input h-60px"
+          class="h-50px w-full min-w-0 flex-1 md:h-60px"
           clearable
           :prefix-icon="Message"
           @keyup.enter="submitForm(formRef)" />
-        <div class="captcha-row__code" @click="refreshCaptcha">
+        <div class="w-full cursor-pointer select-none py-4px text-center md:w-auto md:min-w-72px md:shrink-0 md:py-0"
+          @click="refreshCaptcha">
           <span class="flow-colorful">{{ captcha }}</span>
         </div>
       </div>
     </el-form-item>
-    <el-button type="primary" :loading="showLoading" class="login-submit" @click="submitForm(formRef)" size="large">
+    <el-button
+      type="primary"
+      :loading="showLoading"
+      class="mt-[clamp(24px,6vw,44px)] min-h-50px w-full text-[clamp(16px,4vw,18px)]"
+      @click="submitForm(formRef)"
+      size="large">
       登 录
     </el-button>
   </el-form>
@@ -198,6 +204,14 @@ const refreshCaptcha = () => {
 
 <style lang="scss" scoped>
 .captcha-input {
+  width: 100%;
+  min-width: 0;
+
+  :deep(.el-form-item__content) {
+    width: 100%;
+    min-width: 0;
+  }
+
   :deep(.el-input__wrapper) {
     background-color: rgba(0, 0, 0, 0);
     border: none;
@@ -221,33 +235,6 @@ const refreshCaptcha = () => {
   }
 }
 
-.captcha-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-
-  &__input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__code {
-    flex-shrink: 0;
-    cursor: pointer;
-    user-select: none;
-    min-width: 72px;
-    text-align: center;
-  }
-}
-
-.login-submit {
-  margin-top: clamp(24px, 6vw, 44px);
-  min-height: 50px;
-  width: 100%;
-  font-size: clamp(16px, 4vw, 18px);
-}
-
 .flow-colorful {
   display: inline-block;
   line-height: 1.2;
@@ -268,21 +255,6 @@ const refreshCaptcha = () => {
   }
   to {
     filter: hue-rotate(360deg);
-  }
-}
-
-@media (max-width: 480px) {
-  .captcha-row {
-    flex-wrap: wrap;
-
-    &__input {
-      flex: 1 1 100%;
-    }
-
-    &__code {
-      flex: 1 1 100%;
-      padding: 4px 0;
-    }
   }
 }
 </style>

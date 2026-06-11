@@ -69,13 +69,15 @@ defineExpose({openDialog})
     <div class="qrcode-dialog-body">
       <div class="qrcode-tag">· 产品追溯 ·</div>
       <div class="qrcode-title">{{ record?.productName || "F系列齿轮搅拌机" }}</div>
-      <div class="qrcode-info">型号：{{ record?.model || "-" }}</div>
-      <div class="qrcode-info">功率：{{ record?.power || "-" }}</div>
+      <div class="qrcode-spec-row">
+        <span class="qrcode-info">型号：{{ record?.model || "-" }}</span>
+        <span class="qrcode-spec-divider"></span>
+        <span class="qrcode-info">功率：{{ record?.power || "-" }}</span>
+      </div>
       <div class="qrcode-code-wrap">
         <div id="barcode-qrcode"></div>
       </div>
       <div class="qrcode-tip">微信扫一扫打开产品信息页面</div>
-      <div class="qrcode-tip qrcode-tip--sub">短链接扫码，数据从后端 API 读取</div>
     </div>
     <div class="qrcode-download">
       <el-button @click="generateAndDownload">下载</el-button>
@@ -134,8 +136,26 @@ defineExpose({openDialog})
   word-break: break-word;
 }
 
-.qrcode-info {
+.qrcode-spec-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px 14px;
+  width: 100%;
   margin-top: 6px;
+  padding: 0 8px;
+}
+
+.qrcode-spec-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+
+.qrcode-info {
+  margin-top: 0;
   font-size: clamp(14px, 3.5vw, 15px);
   line-height: 1.8;
   padding: 0 8px;

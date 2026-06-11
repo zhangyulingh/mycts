@@ -158,23 +158,25 @@ onMounted(async () => {
         class="mb-0" />
 
       <div class="barcode-toolbar">
-        <el-form :inline="true" :model="queryCondition" ref="queryFmRef" class="barcode-toolbar__form">
-          <el-form-item label="关键词" prop="Keywords" class="barcode-toolbar__search-item">
-            <div class="barcode-search-row">
-              <el-input
-                v-model="queryCondition.Keywords"
-                placeholder="产品名称 / 型号 / 功率"
-                clearable
-                class="barcode-search-row__input"
-                @keyup.enter="queryBarcodeList()" />
-              <div class="barcode-search-row__actions">
-                <el-button type="primary" @click="queryBarcodeList()">查询</el-button>
-                <el-button @click="resetFields()">清除条件</el-button>
+        <el-form :model="queryCondition" ref="queryFmRef" class="barcode-toolbar__form">
+          <div class="barcode-toolbar__row">
+            <el-form-item label="关键词" prop="Keywords" class="barcode-toolbar__search-item">
+              <div class="barcode-search-row">
+                <el-input
+                  v-model="queryCondition.Keywords"
+                  placeholder="产品名称 / 型号 / 功率"
+                  clearable
+                  class="barcode-search-row__input"
+                  @keyup.enter="queryBarcodeList()" />
+                <div class="barcode-search-row__actions">
+                  <el-button type="primary" @click="queryBarcodeList()">查询</el-button>
+                  <el-button @click="resetFields()">清除条件</el-button>
+                </div>
               </div>
-            </div>
-          </el-form-item>
+            </el-form-item>
+            <el-button type="primary" class="barcode-toolbar__action" @click="onOpenAdd">录入产品信息</el-button>
+          </div>
         </el-form>
-        <el-button type="primary" plain class="barcode-toolbar__action" @click="onOpenAdd">录入产品信息</el-button>
       </div>
 
       <div v-if="showExcelModule" class="barcode-file-bar">
@@ -286,9 +288,6 @@ onMounted(async () => {
   .barcode-toolbar {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px 16px;
     padding: clamp(12px, 2vw, 16px) clamp(14px, 2vw, 20px);
     background: #f8fafb;
     border: 1px solid #eef2f5;
@@ -296,35 +295,52 @@ onMounted(async () => {
     flex-shrink: 0;
 
     &__form {
-      flex: 1 1 280px;
-      min-width: 0;
+      width: 100%;
       margin-bottom: 0;
+    }
 
-      :deep(.el-form-item) {
-        margin-bottom: 0;
-        margin-right: 0;
-        width: 100%;
-      }
+    &__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 16px;
+      width: 100%;
 
-      :deep(.el-form-item__label) {
-        line-height: 32px;
-        padding-right: 12px;
-      }
-
-      :deep(.el-form-item__content) {
-        line-height: 32px;
-        flex: 1;
-        min-width: 0;
+      @media (min-width: 769px) {
+        .barcode-toolbar__action {
+          min-width: 148px;
+          height: 36px;
+          padding: 0 22px;
+          font-size: 15px;
+          font-weight: 600;
+        }
       }
     }
 
     &__search-item {
-      width: 100%;
+      flex: 1 1 280px;
+      min-width: 0;
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+
+      :deep(.el-form-item__label) {
+        line-height: 32px;
+        height: 32px;
+        padding-right: 12px;
+      }
+
+      :deep(.el-form-item__content) {
+        display: flex;
+        align-items: center;
+        line-height: 32px;
+        min-width: 0;
+      }
     }
 
     &__action {
       flex: 0 0 auto;
-      align-self: center;
+      margin-left: auto;
     }
   }
 
@@ -447,17 +463,37 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .barcode-container {
-    .barcode-toolbar {
+    .barcode-toolbar__row {
       flex-direction: column;
       align-items: stretch;
+      gap: 10px;
+    }
 
-      &__action {
+    .barcode-toolbar__search-item {
+      flex: none;
+      width: 100%;
+      align-items: flex-start;
+
+      :deep(.el-form-item__label) {
+        height: auto;
+        line-height: 1.4;
+        padding-bottom: 6px;
+      }
+
+      :deep(.el-form-item__content) {
         width: 100%;
-        align-self: stretch;
       }
     }
 
+    .barcode-toolbar__action {
+      margin-left: 0;
+      width: 100%;
+      min-height: 32px;
+    }
+
     .barcode-search-row {
+      gap: 8px;
+
       &__input {
         flex: 1 1 100%;
       }
