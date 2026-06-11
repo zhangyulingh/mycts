@@ -94,6 +94,9 @@ watch(() => route.query, loadRecord)
 .scan-page {
   min-height: 100vh;
   min-height: 100dvh;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #e8f8f6 0%, #f5f7fa 40%);
