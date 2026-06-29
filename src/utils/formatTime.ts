@@ -52,6 +52,24 @@ export function formatDate(param: Date | string, format: string): string {
     return format
 }
 
+/** 创建时间默认格式 */
+export const CREATED_AT_FORMAT = "YYYY-mm-dd HH:MM:SS"
+
+/**
+ * 格式化创建时间（兼容 PostgreSQL ISO 字符串、Date、时间戳）
+ * @param value created_at 等字段
+ * @param format 默认 YYYY-mm-dd HH:MM:SS
+ */
+export function formatCreatedAt(
+    value: string | Date | number | null | undefined,
+    format: string = CREATED_AT_FORMAT
+): string {
+    if (value == null || value === "") return "-"
+    const date = value instanceof Date ? value : new Date(value)
+    if (Number.isNaN(date.getTime())) return "-"
+    return formatDate(date, format)
+}
+
 /**
  * 获取当前日期是第几周
  * @param dateTime 当前传入的日期值

@@ -233,7 +233,7 @@ onMounted(async () => {
         </el-table>
       </div>
 
-      <div class="barcode-pagination">
+      <div class="table-pagination">
         <el-pagination
           background
           :page-sizes="[10, 20, 30, 50]"
@@ -445,20 +445,6 @@ onMounted(async () => {
     justify-content: center;
     gap: 2px 8px;
   }
-
-  .barcode-pagination {
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-top: 4px;
-    flex-shrink: 0;
-
-    :deep(.el-pagination) {
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-  }
 }
 
 @media (max-width: 768px) {
@@ -517,13 +503,6 @@ onMounted(async () => {
       }
     }
 
-    .barcode-pagination {
-      justify-content: center;
-
-      :deep(.el-pagination) {
-        justify-content: center;
-      }
-    }
   }
 }
 

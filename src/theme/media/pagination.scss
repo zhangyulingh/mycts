@@ -9,7 +9,12 @@
 	}
 	// 默认居中对齐
 	.el-pagination,
-	.table-footer {
+	.table-footer,
+	.table-pagination {
 		justify-content: center !important;
+
+		.el-pagination {
+			justify-content: center !important;
+		}
 	}
 }

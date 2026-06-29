@@ -3,6 +3,7 @@ import {defineAsyncComponent, reactive, ref, onMounted, computed} from "vue"
 import {ElMessage, ElMessageBox} from "element-plus"
 import {Session} from "@/utils/storage"
 import {getAccountPageList, deleteAccount, getAccountInfo, type AccountItem} from "@/api/account"
+import {formatCreatedAt} from "@/utils/formatTime"
 
 const PRIMARY_ADMIN_USERNAME = "admin"
 
@@ -199,7 +200,11 @@ const onRowDel = (row: AccountItem) => {
           </template>
         </el-table-column>
         <el-table-column prop="phone" label="手机号" width="130" />
-        <el-table-column prop="created_at" label="创建时间" width="170" show-overflow-tooltip />
+        <el-table-column prop="created_at" label="创建时间" width="170" show-overflow-tooltip>
+          <template #default="{row}">
+            {{ formatCreatedAt(row.created_at) }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="130" fixed="right">
           <template #default="{row}">
             <el-button size="small" text type="primary" @click="onOpenEdit(row)" v-if="canEdit(row)">编辑</el-button>
@@ -210,7 +215,7 @@ const onRowDel = (row: AccountItem) => {
 
       <el-empty v-if="!state.loading && state.tableData.length === 0" />
 
-      <div class="mt-4" v-if="state.total > 0">
+      <div class="table-pagination" v-if="state.total > 0">
         <el-pagination
           :page-sizes="[10, 20, 30, 50]"
           v-model:current-page="queryCondition.pageIndex"
