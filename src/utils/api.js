@@ -1,3 +1,5 @@
+﻿import {Session} from "./storage"
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")
 
 async function request(path, options = {}) {
@@ -25,7 +27,17 @@ async function request(path, options = {}) {
   return data
 }
 
+function getCurrentUser() {
+  try {
+    return Session.get("userInfo")
+  } catch {
+    return null
+  }
+}
+
 export function saveProduct(product) {
+  const userInfo = getCurrentUser()
+  if (userInfo?.userName) product.created_by = userInfo.userName
   return request("/products", {
     method: "POST",
     body: JSON.stringify(product),
@@ -33,6 +45,8 @@ export function saveProduct(product) {
 }
 
 export function updateProduct(barcode, product) {
+  const userInfo = getCurrentUser()
+  if (userInfo?.userName && !product.created_by) product.created_by = userInfo.userName
   return request(`/products/${encodeURIComponent(barcode)}`, {
     method: "PUT",
     body: JSON.stringify(product),
@@ -44,7 +58,12 @@ export function getProduct(barcode) {
 }
 
 export function listProducts(limit = 20) {
-  return request(`/products?limit=${encodeURIComponent(limit)}`)
+  const userInfo = getCurrentUser()
+  const params = new URLSearchParams()
+  if (userInfo?.userName) params.set("created_by", userInfo.userName)
+  if (userInfo?.isAdmin) params.set("all", "true")
+  params.set("limit", String(limit))
+  return request(`/products?${params}`)
 }
 
 export function deleteProduct(barcode) {

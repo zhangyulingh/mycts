@@ -17,6 +17,11 @@ function createService() {
       if (header) {
         config.headers!["Custom"] = header
       }
+      const userInfo = Session.get("userInfo")
+      const operatorName = userInfo?.userName || userInfo?.loginName
+      if (operatorName) {
+        config.headers!["X-Operator-Username"] = operatorName
+      }
       return config
     },
     // 发送失败
@@ -36,8 +41,16 @@ function createService() {
       }
     },
     (error) => {
-      // Status 是 HTTP 状态码
+      const responseData = get(error, "response.data") as Partial<IResponseData<unknown>> | undefined
+      const apiMessage = typeof responseData?.message === "string" ? responseData.message.trim() : ""
       const status = get(error, "response.status")
+
+      if (apiMessage) {
+        error.message = apiMessage
+        ElMessage.error(apiMessage)
+        return Promise.reject(error)
+      }
+
       switch (status) {
         case 400:
           error.message = "请求错误"
@@ -46,8 +59,7 @@ function createService() {
         case 4001:
           // `token` 过期或者账号已在别处登录
           Session.clear()
-          // 清除浏览器全部临时缓存
-          window.location.href = "/" // 去登录页
+          window.location.href = "/"
           ElMessageBox.alert("你已被登出，请重新登录", "提示", {})
             .then(() => {})
             .catch(() => {})

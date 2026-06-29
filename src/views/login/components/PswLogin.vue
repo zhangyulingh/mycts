@@ -9,13 +9,11 @@ import {initFrontEndControlRoutes} from "@/router/frontEnd"
 import {Key, User, Message} from "@element-plus/icons-vue"
 import generateRandomString from "@/utils/loginCode"
 import {dynamicRoutes} from "@/router/route"
-// 定义验证码属性 // 生成随机的 4 位大小写组合的英文验证码
+
 const captcha = ref(generateRandomString(4))
 
-// 监听验证码的变化
 watch(captcha, (newCaptcha: any, oldCaptcha: any) => {
   if (newCaptcha !== oldCaptcha) {
-    // 验证码变化时，可能需要进行一些其他操作，例如更新界面或验证验证码
   }
 })
 const showLoading = ref(false)
@@ -59,70 +57,48 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 const isPasswordError = ref(false)
 
+async function doLogin(username: string, password: string) {
+  const {accountLogin} = await import("@/api/account")
+  return accountLogin({account: username, password: password})
+}
+
 // 模拟登录 - 不调用真实接口
 async function gotoLogin() {
   showLoading.value = true
-  const originalPassword = formData.pwd // 保存原始密码
+  const originalPassword = formData.pwd
 
   try {
-    // 模拟网络延迟
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const accountUser = await doLogin(formData.userName, formData.pwd)
+    if (!accountUser) throw new Error("用户名或密码错误")
 
-    // 固定登录凭据验证
-    const validCredentials = [
-      {username: "admin", password: "admin@2023", name: "管理员", isAdmin: true},
-      {username: "user", password: "User@2023", name: "普通用户", isAdmin: false},
-      {username: "test", password: "Test@2023", name: "测试用户", isAdmin: false},
-      {username: "demo", password: "Demo@2023", name: "演示用户", isAdmin: false},
-      {username: "manager", password: "Manager@2023", name: "经理", isAdmin: true},
-      {username: "operator", password: "Operator@2023", name: "操作员", isAdmin: false},
-    ]
-
-    const validUser = validCredentials.find((cred) => cred.username === formData.userName && cred.password === formData.pwd)
-
-    if (!validUser) {
-      throw new Error("用户名或密码错误")
-    }
-
-    // 模拟用户数据
+    const isAdmin = accountUser.role === "admin"
+    const isPrimaryAdmin = accountUser.username === "admin"
     const mockUser: UserInfos = {
       token: "mock_token_" + Date.now(),
-      loginName: formData.userName,
-      name: validUser.name,
-      userName: formData.userName, // 添加userName字段
-      full_name: validUser.name, // 添加full_name字段
+      loginName: accountUser.username || formData.userName,
+      name: accountUser.nickname || accountUser.username || formData.userName,
+      userName: accountUser.username || formData.userName,
+      full_name: accountUser.nickname || accountUser.username || formData.userName,
       time: Date.now(),
-      roles: [],
+      roles: isAdmin ? ["admin"] : ["user"],
       authBtnList: [],
-      isAdmin: validUser.isAdmin,
+      isAdmin,
+      isPrimaryAdmin,
+      id: accountUser.id,
+      role: accountUser.role,
       actionCodeList: "device:list,device:add,device:edit,device:delete",
     }
 
-    // 设置角色
-    if (mockUser.isAdmin) {
-      mockUser.roles = ["admin"]
-    } else {
-      mockUser.roles = ["user"]
-    }
-
-    if (mockUser.actionCodeList) {
-      mockUser.roles.push(...mockUser.actionCodeList.split(","))
-    }
-
-    // 存储用户信息
     Session.set("token", mockUser.token, remenber.value)
     Session.set("userInfo", mockUser, remenber.value)
 
-    // 设置数据看板链接
-
-    // 初始化路由
     const isNoPower = await initFrontEndControlRoutes()
     signInSuccess(isNoPower)
   } catch (error) {
     console.error("Login error:", error)
-    // 保留原始密码
     formData.pwd = originalPassword
     isPasswordError.value = true
+    ElMessage.error("用户名或密码错误")
   } finally {
     showLoading.value = false
   }
@@ -134,8 +110,6 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
     ElMessage.warning("抱歉，您没有登录权限")
     Session.clear()
   } else {
-    // 登录成功，跳到转首页
-    // 如果是复制粘贴的路径，非首页/登录页，那么登录成功后重定向到对应的路径中
     if (route.query?.redirect) {
       router.push({
         path: <string>route.query?.redirect,
@@ -144,11 +118,9 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
     } else {
       router.push("/")
     }
-    // 添加 loading，防止第一次进入界面时出现短暂空白
     NextLoading.start()
   }
 }
-// 点击验证码刷新
 const refreshCaptcha = () => {
   captcha.value = generateRandomString(4)
 }
@@ -175,7 +147,6 @@ const refreshCaptcha = () => {
         :prefix-icon="Key"
         @keyup.enter="submitForm(formRef)" />
     </el-form-item>
-    <!-- 验证码 -->
     <el-form-item prop="code" class="captcha-input w-full">
       <div class="flex w-full min-w-0 flex-col items-stretch gap-12px md:flex-row md:items-center">
         <ElInput
@@ -201,40 +172,33 @@ const refreshCaptcha = () => {
     </el-button>
   </el-form>
 </template>
-
 <style lang="scss" scoped>
 .captcha-input {
   width: 100%;
   min-width: 0;
-
   :deep(.el-form-item__content) {
     width: 100%;
     min-width: 0;
   }
-
   :deep(.el-input__wrapper) {
     background-color: rgba(0, 0, 0, 0);
     border: none;
     box-shadow: none;
     padding: 0px;
   }
-
   :deep(.el-input__inner) {
     transition: background-color 9999s ease-out 0.5s;
     -webkit-text-fill-color: #16baaa;
     border-bottom: 1px solid #16baaa !important;
   }
-
   :deep(.el-input__icon) {
     color: #16baaa;
   }
-
   .error :deep(.el-input__inner) {
     -webkit-text-fill-color: red;
     color: red !important;
   }
 }
-
 .flow-colorful {
   display: inline-block;
   line-height: 1.2;
@@ -248,13 +212,8 @@ const refreshCaptcha = () => {
   letter-spacing: 2px;
   text-decoration: line-through solid rgba(0, 0, 0, 0.5) 1px !important;
 }
-
 @keyframes text-animation {
-  from {
-    filter: hue-rotate(0deg);
-  }
-  to {
-    filter: hue-rotate(360deg);
-  }
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(360deg); }
 }
 </style>
