@@ -1,6 +1,11 @@
 ﻿<template>
   <el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="550px">
-    <el-form ref="dialogFormRef" :model="state.ruleForm" size="default" :label-width="state.selfEdit ? '100px' : '90px'">
+    <el-form
+      ref="dialogFormRef"
+      :model="state.ruleForm"
+      :rules="formRules"
+      size="default"
+      :label-width="state.selfEdit ? '100px' : '90px'">
       <el-row :gutter="30">
         <el-col v-if="!state.selfPasswordOnly" :xs="24" :sm="state.selfEdit ? 24 : 12" class="mb-20px">
           <el-form-item label="用户名" prop="username">
@@ -14,27 +19,28 @@
 
         <template v-if="state.selfEdit">
           <el-col :xs="24" :sm="24" class="mb-20px">
-            <el-form-item label="原密码">
+            <el-form-item label="原密码" prop="oldPassword">
               <el-input
                 v-model="state.ruleForm.oldPassword"
                 type="password"
                 show-password
-                placeholder="修改密码时必填"
+                :placeholder="state.selfPasswordOnly ? '请输入原密码' : '修改密码时必填'"
                 clearable />
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="24" class="mb-20px">
-            <el-form-item label="新密码">
+            <el-form-item label="新密码" prop="newPassword">
               <el-input
                 v-model="state.ruleForm.newPassword"
                 type="password"
                 show-password
-                placeholder="留空则不修改密码"
-                clearable />
+                :placeholder="state.selfPasswordOnly ? '请输入新密码' : '留空则不修改密码'"
+                clearable
+                @input="revalidateConfirmPassword" />
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="24" class="mb-20px">
-            <el-form-item label="确认密码">
+            <el-form-item label="确认密码" prop="confirmPassword">
               <el-input
                 v-model="state.ruleForm.confirmPassword"
                 type="password"
@@ -88,14 +94,94 @@
 <script setup lang="ts">
 import {reactive, ref, computed} from "vue"
 import {useRouter} from "vue-router"
-import {ElMessage} from "element-plus"
+import {ElMessage, type FormInstance, type FormRules} from "element-plus"
 import {Session} from "@/utils/storage"
 import {addAccount, updateAccount} from "@/api/account"
 
 const emit = defineEmits(["refresh", "selfUpdated"])
-const dialogFormRef = ref()
+const dialogFormRef = ref<FormInstance>()
 const router = useRouter()
 let originalUsername = ""
+
+const trimValue = (value: string) => value.trim()
+
+const isChangingSelfPassword = () => {
+  const {oldPassword, newPassword, confirmPassword} = state.ruleForm
+  return !!(trimValue(oldPassword) || trimValue(newPassword) || trimValue(confirmPassword))
+}
+
+const shouldValidateSelfPassword = () => state.selfPasswordOnly || isChangingSelfPassword()
+
+const validateOldPasswordField = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!shouldValidateSelfPassword()) {
+    callback()
+    return
+  }
+  if (!trimValue(value || "")) {
+    callback(new Error("请输入原密码"))
+    return
+  }
+  callback()
+}
+
+const validateNewPasswordField = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!shouldValidateSelfPassword()) {
+    callback()
+    return
+  }
+  if (!trimValue(value || "")) {
+    callback(new Error("请输入新密码"))
+    return
+  }
+  callback()
+}
+
+const validateConfirmPasswordField = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (!shouldValidateSelfPassword()) {
+    callback()
+    return
+  }
+  const newPassword = trimValue(state.ruleForm.newPassword)
+  const confirmPassword = trimValue(value || "")
+  if (!confirmPassword) {
+    callback(new Error("请确认新密码"))
+    return
+  }
+  if (newPassword !== confirmPassword) {
+    callback(new Error("两次输入的新密码不一致"))
+    return
+  }
+  callback()
+}
+
+const passwordFieldTriggers = ["blur", "change"] as const
+
+const formRules = computed<FormRules>(() => {
+  if (state.selfPasswordOnly) {
+    return {
+      oldPassword: [{required: true, message: "请输入原密码", trigger: passwordFieldTriggers}],
+      newPassword: [{required: true, message: "请输入新密码", trigger: passwordFieldTriggers}],
+      confirmPassword: [{required: true, validator: validateConfirmPasswordField, trigger: passwordFieldTriggers}],
+    }
+  }
+
+  if (state.selfEdit) {
+    return {
+      username: [{required: true, message: "请输入用户名", trigger: passwordFieldTriggers}],
+      oldPassword: [{validator: validateOldPasswordField, trigger: passwordFieldTriggers}],
+      newPassword: [{validator: validateNewPasswordField, trigger: passwordFieldTriggers}],
+      confirmPassword: [{validator: validateConfirmPasswordField, trigger: passwordFieldTriggers}],
+    }
+  }
+
+  const rules: FormRules = {
+    username: [{required: true, message: "请输入用户名", trigger: passwordFieldTriggers}],
+  }
+  if (state.dialog.type === "add") {
+    rules.password = [{required: true, message: "请输入密码", trigger: passwordFieldTriggers}]
+  }
+  return rules
+})
 
 const isPrimaryAdmin = computed(() => {
   const userInfo = Session.get("userInfo")
@@ -141,6 +227,7 @@ const initAndShow = (row: any, options?: {selfEdit?: boolean; selfPasswordOnly?:
   state.selfEdit = options?.selfEdit === true || state.selfPasswordOnly
   state.dialog.isShowDialog = true
   resetPasswordFields()
+  dialogFormRef.value?.clearValidate()
   if (row && row.id) {
     state.dialog.type = "edit"
     state.dialog.title = state.selfPasswordOnly
@@ -168,28 +255,9 @@ const initAndShow = (row: any, options?: {selfEdit?: boolean; selfPasswordOnly?:
 const closeDialog = () => { state.dialog.isShowDialog = false }
 const onCancel = () => { closeDialog() }
 
-const validateSelfPassword = () => {
-  const {oldPassword, newPassword, confirmPassword} = state.ruleForm
-  const changingPassword = state.selfPasswordOnly || !!(oldPassword || newPassword || confirmPassword)
-  if (!changingPassword) return true
-
-  if (!oldPassword) {
-    ElMessage.warning("请输入原密码")
-    return false
-  }
-  if (!newPassword) {
-    ElMessage.warning("请输入新密码")
-    return false
-  }
-  if (!confirmPassword) {
-    ElMessage.warning("请确认新密码")
-    return false
-  }
-  if (newPassword !== confirmPassword) {
-    ElMessage.warning("两次输入的新密码不一致")
-    return false
-  }
-  return true
+const revalidateConfirmPassword = () => {
+  if (!trimValue(state.ruleForm.confirmPassword)) return
+  dialogFormRef.value?.validateField("confirmPassword").catch(() => undefined)
 }
 
 const shouldReLogin = (submitData: {username?: string; password?: string}) => {
@@ -201,28 +269,38 @@ const shouldReLogin = (submitData: {username?: string; password?: string}) => {
 }
 
 const onSubmit = async () => {
-  if (!state.ruleForm.username) { ElMessage.warning("请输入用户名"); return }
-  if (state.dialog.type === "add" && !state.ruleForm.password) { ElMessage.warning("请输入密码"); return }
-  if (state.selfEdit && !validateSelfPassword()) return
+  if (!dialogFormRef.value) return
+  const valid = await dialogFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const username = trimValue(state.ruleForm.username)
+  if (state.selfEdit && !state.selfPasswordOnly) {
+    const usernameChanged = username !== originalUsername
+    if (!usernameChanged && !isChangingSelfPassword()) {
+      ElMessage.warning("请修改用户名或密码")
+      return
+    }
+  }
 
   state.loading = true
   try {
     let submitData: any
 
     if (state.selfEdit) {
-      submitData = {username: state.ruleForm.username}
-      if (state.selfPasswordOnly || state.ruleForm.newPassword) {
-        submitData.oldPassword = state.ruleForm.oldPassword
-        submitData.password = state.ruleForm.newPassword
+      submitData = {username}
+      if (state.selfPasswordOnly || trimValue(state.ruleForm.newPassword)) {
+        submitData.oldPassword = trimValue(state.ruleForm.oldPassword)
+        submitData.password = trimValue(state.ruleForm.newPassword)
       }
     } else {
       submitData = {
-        username: state.ruleForm.username,
+        username,
         nickname: state.ruleForm.nickname,
         phone: state.ruleForm.phone,
         role: state.ruleForm.role,
       }
-      if (state.ruleForm.password) submitData.password = state.ruleForm.password
+      const password = trimValue(state.ruleForm.password)
+      if (password) submitData.password = password
     }
 
     if (state.dialog.type === "edit") {

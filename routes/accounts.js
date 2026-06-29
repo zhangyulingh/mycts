@@ -219,6 +219,8 @@ router.put("/:id", async (req, res, next) => {
     const isSelf = isSelfAccount(operatorAccount, operatorUsername, target);
 
     const { username, password, oldPassword, nickname, role, phone } = req.body || {};
+    const trimmedPassword = typeof password === "string" ? password.trim() : "";
+    const trimmedOldPassword = typeof oldPassword === "string" ? oldPassword.trim() : "";
     if (!username) return res.status(400).json({ success: false, message: "用户名不能为空" });
 
     if (target.role === "admin" && !operatorIsPrimary && !isSelf) {
@@ -229,7 +231,7 @@ router.put("/:id", async (req, res, next) => {
     }
     if (isSelf && !operatorIsPrimary) {
       const passwordOnlySelfUpdate =
-        password &&
+        trimmedPassword &&
         String(username).trim() === target.username &&
         nickname === undefined &&
         role === undefined &&
@@ -239,11 +241,11 @@ router.put("/:id", async (req, res, next) => {
       }
     }
 
-    if (password && isSelf) {
-      if (!oldPassword) {
+    if (trimmedPassword && isSelf) {
+      if (!trimmedOldPassword) {
         return res.status(400).json({ success: false, message: "请输入原密码" });
       }
-      if (!verifyPassword(oldPassword, target.password)) {
+      if (!verifyPassword(trimmedOldPassword, target.password)) {
         return res.status(400).json({ success: false, message: "原密码错误" });
       }
     }
@@ -260,9 +262,9 @@ router.put("/:id", async (req, res, next) => {
         paramIndex++;
       }
     }
-    if (password) {
+    if (trimmedPassword) {
       setClauses.push(`password = $${paramIndex}`);
-      values.push(hashPassword(password));
+      values.push(hashPassword(trimmedPassword));
       paramIndex++;
     }
     setClauses.push("updated_at = NOW()");
